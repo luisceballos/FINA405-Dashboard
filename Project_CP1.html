@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Project CP1 — FINA 405</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1A3A6B;--gold:#C4901A;--teal:#1A7A6B;--red:#C0392B;--purple:#7D3C98;
+  --bg:#F5F7FC;--card:#FFFFFF;--text:#1C2333;--muted:#6B7A99;--border:#E2E8F0;
+  --radius:10px;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111827;--card:#1F2937;--text:#F1F5F9;--muted:#94A3B8;--border:#374151;
+}}
+:root[data-theme="dark"]{--bg:#111827;--card:#1F2937;--text:#F1F5F9;--muted:#94A3B8;--border:#374151;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;}
+
+/* Hero */
+.hero{background:var(--navy);color:#fff;padding:32px 40px 0;}
+.hero-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.hero h1{font-family:'Libre Baskerville',serif;font-size:2rem;font-weight:700;}
+.hero h1 span{color:var(--gold);}
+.hero .sub{font-size:.92rem;color:#A0B4D0;margin-top:4px;}
+
+/* Hero KPI split */
+.hero-split{display:grid;grid-template-columns:3fr 2fr;gap:0;margin-top:22px;}
+.hero-kpi-block{padding-bottom:22px;}
+.hero-kpi-block-country{border-left:1px solid rgba(255,255,255,.15);padding-left:28px;}
+.hero-block-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:#A0B4D0;margin-bottom:10px;}
+@media(max-width:760px){
+  .hero-split{grid-template-columns:1fr;}
+  .hero-kpi-block-country{border-left:none;border-top:1px solid rgba(255,255,255,.12);padding-left:0;padding-top:16px;}
+}
+.kpis-hero{display:flex;flex-wrap:wrap;gap:22px;}
+.kpi-hero{display:flex;flex-direction:column;}
+.kpi-hero .label{font-size:.68rem;color:#A0B4D0;text-transform:uppercase;letter-spacing:.07em;}
+.kpi-hero .value{font-size:1.22rem;font-weight:600;font-variant-numeric:tabular-nums;}
+.kpi-hero .value.up{color:#4ECCA3;}.kpi-hero .value.down{color:#FF6B6B;}
+.divider-gold{height:3px;background:linear-gradient(90deg,var(--gold),transparent);margin-top:0;}
+
+/* Risk banner — 3 columns */
+.risk-banner{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-top:3px solid rgba(255,255,255,.1);}
+.risk-cell{padding:16px 20px;border-right:1px solid rgba(255,255,255,.1);}
+.risk-cell:last-child{border-right:none;}
+.risk-label{font-size:.66rem;text-transform:uppercase;letter-spacing:.08em;color:#A0B4D0;margin-bottom:4px;}
+.risk-level{font-size:.92rem;font-weight:700;letter-spacing:.03em;margin-bottom:4px;}
+.risk-note{font-size:.76rem;color:#C8D6E8;line-height:1.55;}
+.risk-hedge{font-size:.74rem;color:#D0E4F0;line-height:1.6;}
+.risk-hedge strong{color:#A8D8F0;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;}
+@media(max-width:900px){.risk-banner{grid-template-columns:1fr 1fr;}}
+@media(max-width:600px){.risk-banner{grid-template-columns:1fr;}}
+
+/* Layout */
+.container{max-width:1320px;margin:0 auto;padding:32px 24px;}
+.section{margin-bottom:48px;}
+.section-title{font-family:'Libre Baskerville',serif;font-size:1.3rem;color:var(--navy);border-left:4px solid var(--gold);padding-left:12px;margin-bottom:18px;}
+:root[data-theme="dark"] .section-title{color:#CBD5E1;}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .section-title{color:#CBD5E1;}}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.grid-4c{display:grid;grid-template-columns:2fr 1fr;gap:20px;}
+.grid-5c{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+@media(max-width:960px){.grid-2,.grid-3,.grid-4,.grid-4c{grid-template-columns:1fr 1fr;}.grid-5c{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:600px){.grid-2,.grid-3,.grid-4,.grid-4c,.grid-5c{grid-template-columns:1fr;}}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;}
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;overflow:hidden;}
+.chart-wrap{width:100%;height:300px;}
+.kpi-card .k-label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;}
+.kpi-card .k-val{font-size:1.42rem;font-weight:600;color:var(--navy);font-variant-numeric:tabular-nums;}
+:root[data-theme="dark"] .kpi-card .k-val{color:#F1F5F9;}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .kpi-card .k-val{color:#F1F5F9;}}
+.kpi-card .k-sub{font-size:.76rem;color:var(--muted);margin-top:2px;}
+.narrative{font-size:.86rem;line-height:1.78;color:var(--text);}
+.narrative-scroll{max-height:130px;overflow-y:auto;}
+.data-note{font-size:.64rem;color:var(--muted);margin:3px 0 12px;padding:0 2px;font-style:italic;letter-spacing:.01em;}
+.narrative-scroll::-webkit-scrollbar{width:4px;}
+.narrative-scroll::-webkit-scrollbar-thumb{background:var(--border);}
+
+/* Peer table */
+.peer-wrap{overflow-x:auto;}
+.peer-table{width:100%;border-collapse:collapse;font-size:.84rem;}
+.peer-table thead{background:var(--navy);color:#fff;}
+.peer-table th,.peer-table td{padding:9px 13px;text-align:right;border-bottom:1px solid var(--border);}
+.peer-table th:first-child,.peer-table td:first-child,
+.peer-table th:nth-child(2),.peer-table td:nth-child(2){text-align:left;}
+.peer-table .main-row{background:rgba(26,58,107,.06);font-weight:600;}
+:root[data-theme="dark"] .peer-table .main-row{background:rgba(255,255,255,.06);}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .peer-table .main-row{background:rgba(255,255,255,.06);}}
+
+/* Instructor Panel */
+#inst-btn{position:fixed;bottom:24px;right:24px;z-index:999;width:48px;height:48px;border-radius:50%;
+  background:var(--navy);color:#fff;border:none;cursor:pointer;font-size:1.2rem;
+  box-shadow:0 4px 16px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;transition:transform .2s;}
+#inst-btn:hover{transform:scale(1.1);}
+#inst-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:flex-end;justify-content:flex-end;}
+#inst-overlay.open{display:flex;}
+#inst-panel{background:var(--card);width:360px;max-height:90vh;border-radius:16px 0 0 16px;
+  box-shadow:-8px 0 32px rgba(0,0,0,.2);overflow-y:auto;padding:28px 24px;margin-top:auto;}
+#inst-panel h3{font-family:'Libre Baskerville',serif;color:var(--navy);font-size:1.05rem;margin-bottom:14px;}
+:root[data-theme="dark"] #inst-panel h3{color:#CBD5E1;}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) #inst-panel h3{color:#CBD5E1;}}
+.pw-field{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;background:var(--bg);color:var(--text);margin-bottom:10px;}
+.inst-btn-row{display:flex;gap:8px;margin-bottom:14px;}
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.84rem;font-weight:600;}
+.btn-primary{background:var(--navy);color:#fff;}.btn-primary:hover{opacity:.9;}
+.btn-danger{background:var(--red);color:#fff;}.btn-danger:hover{opacity:.9;}
+.btn-ghost{background:var(--border);color:var(--text);}.btn-ghost:hover{opacity:.8;}
+#inst-content{display:none;}#inst-content.unlocked{display:block;}
+
+/* Firm buttons — project vs sample */
+.firm-btn{display:block;width:100%;text-align:left;padding:8px 12px;margin-bottom:5px;
+  border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);
+  cursor:pointer;font-size:.84rem;transition:all .15s;}
+.firm-btn.project-btn:hover,.firm-btn.project-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+.firm-btn.sample-btn:hover,.firm-btn.sample-btn.active{background:var(--teal);color:#fff;border-color:var(--teal);}
+.firm-btn .fb-right{float:right;font-size:.72rem;opacity:.65;}
+.inst-section-header{font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--muted);margin:16px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border);display:block;}
+.inst-section-header:first-child{margin-top:0;}
+.inst-section{margin-bottom:20px;}
+.inst-label{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;display:block;}
+.pw-hint{font-size:.75rem;color:var(--muted);margin-bottom:10px;line-height:1.5;}
+#pw-error{color:var(--red);font-size:.76rem;margin-top:4px;display:none;}
+#pw-set-err{color:var(--red);font-size:.76rem;display:none;margin-bottom:8px;}
+
+/* Type badge */
+.type-badge{display:inline-block;font-size:.55rem;padding:1px 5px;border-radius:3px;
+  font-weight:700;letter-spacing:.06em;vertical-align:middle;margin-left:6px;text-transform:uppercase;}
+.badge-project{background:var(--navy);color:#fff;}
+.badge-sample{background:var(--teal);color:#fff;}
+
+/* Monetary stance */
+.stance-card{padding:14px 20px;}
+.stance-badge{display:inline-block;padding:4px 14px;border-radius:6px;font-size:.78rem;font-weight:700;
+  letter-spacing:.04em;color:#fff;white-space:nowrap;}
+
+/* Footer */
+.footer{text-align:center;padding:24px;font-size:.76rem;color:var(--muted);border-top:1px solid var(--border);}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero" id="hero">
+  <div class="hero-top">
+    <div>
+      <h1 id="hd-title"></h1>
+      <p class="sub" id="hd-sub"></p>
+    </div>
+    <div style="text-align:right;color:#A0B4D0;font-size:.8rem;">
+      <div style="font-weight:600;">FINA 405 — FA26</div>
+      <div>Project Check-in 1</div>
+      <div style="margin-top:4px;">September 07, 2026 03:50</div>
+    </div>
+  </div>
+
+  <!-- Split: Company KPIs (left) | Country KPIs (right) -->
+  <div class="hero-split">
+    <div class="hero-kpi-block">
+      <div class="hero-block-label">Company</div>
+      <div class="kpis-hero" id="hd-kpis-firm"></div>
+    </div>
+    <div class="hero-kpi-block hero-kpi-block-country">
+      <div class="hero-block-label">Country</div>
+      <div class="kpis-hero" id="hd-kpis-country"></div>
+    </div>
+  </div>
+
+  <div class="divider-gold"></div>
+
+  <!-- Risk banner: FX | IR | Hedging -->
+  <div class="risk-banner" id="risk-banner"></div>
+</div>
+
+<div class="container">
+
+  <!-- S0: Business Overview -->
+  <div class="section">
+    <h2 class="section-title" id="s0-title">Business Overview</h2>
+    <div class="grid-4c" style="margin-bottom:20px;">
+      <div class="card">
+        <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Core Business</div>
+        <div class="narrative narrative-scroll" id="biz-text"></div>
+      </div>
+      <div>
+        <div class="grid-2" style="gap:12px;">
+          <div class="card kpi-card"><div class="k-label">Total Assets</div><div class="k-val" id="k-ta"></div></div>
+          <div class="card kpi-card"><div class="k-label">Total Equity</div><div class="k-val" id="k-eq"></div></div>
+          <div class="card kpi-card"><div class="k-label">D/E Ratio</div><div class="k-val" id="k-de"></div><div class="k-sub">Total debt / equity</div></div>
+          <div class="card kpi-card"><div class="k-label">Interest Coverage</div><div class="k-val" id="k-ic"></div><div class="k-sub">EBIT / interest exp.</div></div>
+          <div class="card kpi-card"><div class="k-label">Current Ratio</div><div class="k-val" id="k-cr"></div></div>
+          <div class="card kpi-card"><div class="k-label">Net Debt / EBITDA</div><div class="k-val" id="k-nd"></div></div>
+        </div>
+      </div>
+    </div>
+    <!-- Debt Structure Analysis -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:10px;">📋 Debt Structure Analysis</div>
+      <div class="grid-5c" style="margin-bottom:12px;">
+        <div class="card kpi-card"><div class="k-label">Total Debt</div><div class="k-val" id="k-td"></div><div class="k-sub">Financial debt only</div></div>
+        <div class="card kpi-card"><div class="k-label">LT Debt</div><div class="k-val" id="k-ltd"></div><div class="k-sub">Non-current portion</div></div>
+        <div class="card kpi-card"><div class="k-label">ST Debt</div><div class="k-val" id="k-std"></div><div class="k-sub">Current portion / rollover</div></div>
+        <div class="card kpi-card"><div class="k-label">LT Debt %</div><div class="k-val" id="k-lt-pct"></div><div class="k-sub">% of total debt</div></div>
+        <div class="card kpi-card"><div class="k-label">Debt / Assets</div><div class="k-val" id="k-da"></div><div class="k-sub">Financial leverage ratio</div></div>
+      </div>
+      <div class="card" style="padding:14px 18px;">
+        <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;">Currency, Maturity &amp; Serviceability</div>
+        <div class="narrative" id="debt-analysis-text"></div>
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="chart-card"><div id="ch-bs" class="chart-wrap"></div></div>
+      <div class="chart-card"><div id="ch-leverage" class="chart-wrap"></div></div>
+      <div class="chart-card"><div id="ch-geo" class="chart-wrap"></div></div>
+    </div>
+    <div class="data-note" id="fn-bs"></div>
+  </div>
+
+  <!-- S1: Company Analysis -->
+  <div class="section">
+    <h2 class="section-title" id="s1-title">Company Analysis</h2>
+    <div class="grid-4" style="margin-bottom:12px;">
+      <div class="card kpi-card"><div class="k-label">Revenue (LTM)</div><div class="k-val" id="k-rev"></div></div>
+      <div class="card kpi-card"><div class="k-label">EBITDA</div><div class="k-val" id="k-ebitda"></div></div>
+      <div class="card kpi-card"><div class="k-label">Net Income</div><div class="k-val" id="k-net"></div></div>
+      <div class="card kpi-card"><div class="k-label">Market Cap</div><div class="k-val" id="k-mc"></div></div>
+      <div class="card kpi-card"><div class="k-label">EBIT Margin</div><div class="k-val" id="k-em"></div></div>
+      <div class="card kpi-card"><div class="k-label">Net Margin</div><div class="k-val" id="k-nm"></div></div>
+      <div class="card kpi-card"><div class="k-label">ROE</div><div class="k-val" id="k-roe"></div></div>
+      <div class="card kpi-card"><div class="k-label">ROA</div><div class="k-val" id="k-roa"></div></div>
+    </div>
+    <div class="data-note" id="fn-fin"></div>
+    <div class="grid-2" style="margin-bottom:20px;">
+      <div class="chart-card"><div id="ch-stock" class="chart-wrap"></div></div>
+      <div class="chart-card"><div id="ch-fin" class="chart-wrap"></div></div>
+    </div>
+    <div class="grid-2">
+      <div class="chart-card"><div id="ch-returns" class="chart-wrap"></div></div>
+      <div class="chart-card">
+        <div style="padding:4px 0 10px;font-weight:600;font-size:.86rem;color:var(--navy);" id="peer-hd">Peer Comparison</div>
+        <div class="peer-wrap" id="peer-table"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2: Country Overview -->
+  <div class="section">
+    <h2 class="section-title" id="s2-title">Country Overview</h2>
+    <div class="card" style="margin-bottom:20px;">
+      <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Economic Context &amp; Firm Exposure</div>
+      <div class="narrative" id="country-text"></div>
+    </div>
+
+    <!-- Row 1: Macro fundamentals -->
+    <div class="grid-4" style="margin-bottom:6px;">
+      <div class="card kpi-card"><div class="k-label">GDP Growth</div><div class="k-val" id="k-gdp"></div><div class="k-sub" id="k-gdp-sub">Most recent · World Bank</div></div>
+      <div class="card kpi-card"><div class="k-label">CPI Inflation</div><div class="k-val" id="k-cpi"></div><div class="k-sub" id="k-cpi-sub">Most recent · World Bank</div></div>
+      <div class="card kpi-card"><div class="k-label">Current Account</div><div class="k-val" id="k-ca"></div><div class="k-sub" id="k-ca-sub">% of GDP · World Bank</div></div>
+      <div class="card kpi-card"><div class="k-label">Unemployment</div><div class="k-val" id="k-ue"></div><div class="k-sub" id="k-ue-sub">Most recent · World Bank</div></div>
+      <div class="card kpi-card"><div class="k-label" id="k-fxlbl">FX Rate</div><div class="k-val" id="k-fx"></div><div class="k-sub">Spot rate</div></div>
+      <div class="card kpi-card"><div class="k-label">FX Change (2yr)</div><div class="k-val" id="k-fxchg"></div></div>
+    </div>
+    <div class="data-note" id="fn-wb"></div>
+
+    <!-- Row 2: Monetary policy & credit risk -->
+    <div class="grid-4" style="margin-bottom:6px;">
+      <div class="card kpi-card"><div class="k-label">CB Policy Rate</div><div class="k-val" id="k-pol"></div><div class="k-sub" id="k-pol-sub">Latest · FRED/OECD</div></div>
+      <div class="card kpi-card"><div class="k-label">10yr Gov Yield</div><div class="k-val" id="k-yld"></div><div class="k-sub" id="k-yld-sub">Latest · FRED/OECD</div></div>
+      <div class="card kpi-card"><div class="k-label">Term Spread</div><div class="k-val" id="k-term"></div><div class="k-sub">10yr − Policy Rate</div></div>
+      <div class="card kpi-card"><div class="k-label">Est. 5yr CDS</div><div class="k-val" id="k-cds"></div><div class="k-sub">Rating-implied range · sovereign sov. rating</div></div>
+    </div>
+    <div class="data-note" id="fn-macro"></div>
+
+    <!-- Monetary Policy Stance -->
+    <div class="stance-card card" style="margin-bottom:20px;">
+      <div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;">📊 Monetary Policy Stance</div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <span class="stance-badge" id="stance-badge"></span>
+        <span style="font-size:.85rem;color:var(--text);" id="stance-desc"></span>
+      </div>
+    </div>
+
+    <!-- Charts: macro -->
+    <div class="grid-2" style="margin-bottom:20px;">
+      <div class="chart-card"><div id="ch-gdp" class="chart-wrap"></div></div>
+      <div class="chart-card"><div id="ch-cpi" class="chart-wrap"></div></div>
+    </div>
+    <!-- Charts: FX + sovereign spread -->
+    <div class="grid-2" style="margin-bottom:20px;">
+      <div class="chart-card"><div id="ch-fx" class="chart-wrap"></div></div>
+      <div class="chart-card"><div id="ch-spread" class="chart-wrap"></div></div>
+    </div>
+    <!-- Chart: policy rate + 10yr yield (full width) -->
+    <div class="chart-card">
+      <div id="ch-rates" class="chart-wrap" style="height:280px;"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">FINA 405 · Debt Issuance in Global Markets · FA26 · September 07, 2026 03:50 · Data: Yahoo Finance, World Bank &amp; FRED/OECD</div>
+
+<!-- INSTRUCTOR PANEL -->
+<button id="inst-btn" onclick="togglePanel()" title="Instructor Mode">🔐</button>
+<div id="inst-overlay" onclick="closeIfOutside(event)">
+  <div id="inst-panel">
+    <h3>🔐 Instructor Mode</h3>
+    <div id="auth-section">
+      <p class="pw-hint">Enter the instructor password to unlock firm switching.</p>
+      <input type="password" class="pw-field" id="pw-input" placeholder="Password" onkeydown="if(event.key==='Enter')verifyPw()"/>
+      <div id="pw-error">Incorrect password.</div>
+      <div class="inst-btn-row">
+        <button class="btn btn-primary" onclick="verifyPw()">Unlock</button>
+        <button class="btn btn-ghost"   onclick="closePanel()">Cancel</button>
+      </div>
+      <p class="pw-hint"><a href="#" onclick="showSetPw();return false;">Set / change password</a></p>
+    </div>
+    <div id="set-pw-section" style="display:none;">
+      <p class="pw-hint">Create a password stored locally in this browser.</p>
+      <input type="password" class="pw-field" id="pw-new1" placeholder="New password (min 4 chars)"/>
+      <input type="password" class="pw-field" id="pw-new2" placeholder="Confirm"/>
+      <div id="pw-set-err"></div>
+      <div class="inst-btn-row">
+        <button class="btn btn-primary" onclick="setPw()">Save</button>
+        <button class="btn btn-ghost"   onclick="showAuth()">Back</button>
+      </div>
+    </div>
+    <div id="inst-content">
+      <div class="inst-section">
+        <span class="inst-section-header">Project Firms</span>
+<button class="firm-btn project-btn" onclick="switchFirm('WMT')" id="btn-WMT">Walmart (WMT)<span class="fb-right">Mexico · G1</span></button>
+<button class="firm-btn project-btn" onclick="switchFirm('C')" id="btn-C">Citigroup (C)<span class="fb-right">Brazil · G2</span></button>
+<button class="firm-btn project-btn" onclick="switchFirm('CVX')" id="btn-CVX">Chevron (CVX)<span class="fb-right">Australia · G3</span></button>
+<button class="firm-btn project-btn" onclick="switchFirm('F')" id="btn-F">Ford (F)<span class="fb-right">South Africa · G4</span></button>
+<button class="firm-btn project-btn" onclick="switchFirm('GOOGL')" id="btn-GOOGL">Alphabet (GOOGL)<span class="fb-right">Spain · G5</span></button>
+<button class="firm-btn project-btn" onclick="switchFirm('MCD')" id="btn-MCD">McDonald's (MCD)<span class="fb-right">France · G6</span></button>
+<button class="firm-btn project-btn" onclick="switchFirm('AMZN')" id="btn-AMZN">Amazon (AMZN)<span class="fb-right">Germany · G7</span></button>
+<button class="firm-btn project-btn" onclick="switchFirm('NKE')" id="btn-NKE">Nike (NKE)<span class="fb-right">Japan · G8</span></button>
+<button class="firm-btn project-btn" onclick="switchFirm('HAL')" id="btn-HAL">Halliburton (HAL)<span class="fb-right">Kuwait · G9</span></button>
+<button class="firm-btn project-btn" onclick="switchFirm('AAPL')" id="btn-AAPL">Apple (AAPL)<span class="fb-right">China · G10</span></button>
+<button class="firm-btn project-btn" onclick="switchFirm('SBUX')" id="btn-SBUX">Starbucks (SBUX)<span class="fb-right">Canada · G11</span></button>
+<span class="inst-section-header">Sample Firms</span>
+<button class="firm-btn sample-btn" onclick="switchFirm('CL')" id="btn-CL">Colgate-Palmolive (CL)<span class="fb-right">India · SAMPLE</span></button>
+<button class="firm-btn sample-btn" onclick="switchFirm('INTC')" id="btn-INTC">Intel (INTC)<span class="fb-right">China · SAMPLE</span></button>
+<button class="firm-btn sample-btn" onclick="switchFirm('JPM')" id="btn-JPM">JPMorgan Chase (JPM)<span class="fb-right">India · SAMPLE</span></button>
+<button class="firm-btn sample-btn" onclick="switchFirm('MSFT')" id="btn-MSFT">Microsoft (MSFT)<span class="fb-right">United Kingdom · SAMPLE</span></button>
+<button class="firm-btn sample-btn" onclick="switchFirm('PM')" id="btn-PM">Philip Morris Int'l (PM)<span class="fb-right">Indonesia · SAMPLE</span></button>
+<button class="firm-btn sample-btn" onclick="switchFirm('QCOM')" id="btn-QCOM">Qualcomm (QCOM)<span class="fb-right">Taiwan · SAMPLE</span></button>
+      </div>
+      <div class="inst-section" style="margin-top:16px;">
+        <button class="btn btn-danger" onclick="lockPanel()">🔒 Lock</button>
+        &nbsp;<button class="btn btn-ghost" onclick="showSetPw()">Change Password</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.1/plotly.min.js"></script>
+<script>
+const ALL_DATA = {"MSFT":{
+  "cfg":{
+    "ticker":"MSFT","name":"Microsoft","country":"United Kingdom",
+    "ccy":"GBP","sov":"AA","regime":"Floating",
+    "sector":"—","industry":"—",
+    "exchange":"—","grp":0,"grpLbl":"Sample",
+    "firmType":"sample"
+  },
+  "kpis":{
+    "price_s":"—","ytd_s":"—","ytd_cls":"down","ytd_sym":"▼",
+    "mc_s":"—","pe_s":"—",
+    "beta_s":"—","div_s":"—",
+    "rev_s":"—","ebitda_s":"—",
+    "net_s":"—","ndeb_s":"—",
+    "de_s":"—","cr_s":"—",
+    "em_s":"—","nm_s":"—",
+    "roa_s":"—","roe_s":"—",
+    "ic_s":"—","ta_s":"—",
+    "eq_s":"—",
+    "td_s":"—",
+    "ltd_s":"—",
+    "std_s":"—",
+    "lt_pct_s":"—",
+    "da_s":"—",
+    "biz":"",
+    "debt_text":"Microsoft carries total financial debt of undisclosed. Most existing debt is USD-denominated (standard for US-listed issuers). Issuing in GBP in United Kingdom would ADD GBP-denominated obligations to the capital structure, creating a natural hedge for local-currency revenues while introducing FX translation risk on the principal for USD reporting.",
+    "fin_period":"n/a",
+    "bs_period":"n/a"
+  },
+  "macro":{
+    "gdp_s":"—","cpi_s":"—",
+    "ca_s":"— GDP","unemp_s":"—",
+    "fx_last":"—","fx_chg":"—","fx_lbl":"GBP/USD",
+    "pol_s":"—",
+    "yld_s":"—",
+    "term_s":"—",
+    "cds_s":"25–55 bps",
+    "stance":"Unknown","stance_col":"#888",
+    "stance_desc":"Insufficient rate data to determine stance.",
+    "wb_year":"n/a","fred_date":"n/a"
+  },
+  "risk":{
+    "fx_lvl":"MEDIUM–HIGH","fx_col":"#C0392B",
+    "fx_note":"Free float: GBP driven by market forces. Annualized FX vol ≈ —. USD-reporting issuers face meaningful translation and transaction risk on coupons and principal.",
+    "ir_lvl":"VERY LOW","ir_col":"#1A7A6B",
+    "ir_note":"High grade; tight spreads; reliable access across tenors.",
+    "hedge_note":"<strong>FX:</strong> Full CCS essential: pay fixed GBP / receive fixed USD — locks both FX rate and rate differential. Rolling FX Forwards for each coupon payment date. FRA to lock local rate before issuance. FX Option collar for tail protection on principal.<br/><strong>Rate:</strong> IRS: pay fixed local / receive floating. CCS as alternative if USD funding is cheaper."
+  },
+  "country_text":"United Kingdom is a key market for Microsoft and its sector. The freely floating GBP absorbs external shocks but exposes USD-reporting issuers to meaningful FX translation risk. For Microsoft, this market represents material supply-chain, revenue, or regulatory exposure, making GBP dynamics and local interest rates directly relevant to its cost of capital when issuing debt in United Kingdom.",
+  "charts":{
+    "stock":null,"financials":{"data": [{"type": "bar", "name": "Revenue", "x": [], "y": [], "marker": {"color": "#1A3A6B"}}, {"type": "bar", "name": "EBITDA", "x": [], "y": [], "marker": {"color": "#1A7A6B"}}, {"type": "bar", "name": "Net Income", "x": [], "y": [], "marker": {"color": "#C4901A"}}], "layout": {"title": {"text": "Annual Financials (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 50, "r": 20, "t": 40, "b": 50}}},
+    "bs":{"data": [{"type": "bar", "name": "Total Assets", "x": [], "y": [], "marker": {"color": "#1A3A6B"}, "opacity": 0.85}, {"type": "bar", "name": "Total Liabilities", "x": [], "y": [], "marker": {"color": "#C0392B"}, "opacity": 0.75}, {"type": "bar", "name": "Equity", "x": [], "y": [], "marker": {"color": "#1A7A6B"}, "opacity": 0.85}, {"type": "scatter", "name": "Total Debt", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#7D3C98", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Balance Sheet Evolution (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},"leverage":{"data": [{"type": "scatter", "name": "D/E Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C0392B", "width": 2}, "yaxis": "y"}, {"type": "scatter", "name": "Current Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}, "yaxis": "y2"}], "layout": {"title": {"text": "Leverage & Liquidity", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#C0392B", "title": {"text": "D/E", "font": {"color": "#C0392B"}}}, "yaxis2": {"overlaying": "y", "side": "right", "color": "#1A7A6B", "title": {"text": "Current Ratio", "font": {"color": "#1A7A6B"}}, "showgrid": false}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 60, "t": 40, "b": 50}}},"returns":{"data": [{"type": "scatter", "name": "ROE (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C4901A", "width": 2}}, {"type": "scatter", "name": "ROA (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A3A6B", "width": 2}}, {"type": "scatter", "name": "Net Margin (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Return & Margin Trends (%)", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "%"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},
+    "gdp":null,"cpi":null,"fx":null,"ca":null,
+    "rates":null,"spread":null,"geo":{"data": [{"type": "pie", "labels": ["United States", "United Kingdom", "Germany", "Japan", "France", "Rest of World"], "values": [50, 7, 5, 4, 3, 31], "hole": 0.44, "textinfo": "label+percent", "textposition": "outside", "hovertemplate": "<b>%{label}</b><br>%{value}% of revenue<extra></extra>", "marker": {"colors": ["#1A3A6B", "#1A7A6B", "#C4901A", "#2E6FAD", "#8B5E3C", "#AAAAAA"], "line": {"color": "white", "width": 2}}, "insidetextorientation": "horizontal"}], "layout": {"title": {"text": "Geographic Revenue Mix (approx.)", "font": {"size": 13, "color": "#1A3A6B"}}, "showlegend": false, "margin": {"l": 10, "r": 10, "t": 40, "b": 10}, "plot_bgcolor": "white", "paper_bgcolor": "white"}}
+  },
+  "peers":`<table class="peer-table"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th><th>P/E</th><th>P/B</th><th>Beta</th><th>Div Yld</th></tr></thead><tbody><tr class="main-row"><td><strong>MSFT</strong></td><td>MSFT</td><td>—</td><td>—x</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>`
+},
+"QCOM":{
+  "cfg":{
+    "ticker":"QCOM","name":"Qualcomm","country":"Taiwan",
+    "ccy":"TWD","sov":"AA-","regime":"Managed float",
+    "sector":"—","industry":"—",
+    "exchange":"—","grp":0,"grpLbl":"Sample",
+    "firmType":"sample"
+  },
+  "kpis":{
+    "price_s":"—","ytd_s":"—","ytd_cls":"down","ytd_sym":"▼",
+    "mc_s":"—","pe_s":"—",
+    "beta_s":"—","div_s":"—",
+    "rev_s":"—","ebitda_s":"—",
+    "net_s":"—","ndeb_s":"—",
+    "de_s":"—","cr_s":"—",
+    "em_s":"—","nm_s":"—",
+    "roa_s":"—","roe_s":"—",
+    "ic_s":"—","ta_s":"—",
+    "eq_s":"—",
+    "td_s":"—",
+    "ltd_s":"—",
+    "std_s":"—",
+    "lt_pct_s":"—",
+    "da_s":"—",
+    "biz":"",
+    "debt_text":"Qualcomm carries total financial debt of undisclosed. Most existing debt is USD-denominated (standard for US-listed issuers). Issuing in TWD in Taiwan would ADD TWD-denominated obligations to the capital structure, creating a natural hedge for local-currency revenues while introducing FX translation risk on the principal for USD reporting.",
+    "fin_period":"n/a",
+    "bs_period":"n/a"
+  },
+  "macro":{
+    "gdp_s":"—","cpi_s":"—",
+    "ca_s":"— GDP","unemp_s":"—",
+    "fx_last":"—","fx_chg":"—","fx_lbl":"USD/TWD",
+    "pol_s":"—",
+    "yld_s":"—",
+    "term_s":"—",
+    "cds_s":"35–75 bps",
+    "stance":"Unknown","stance_col":"#888",
+    "stance_desc":"Insufficient rate data to determine stance.",
+    "wb_year":"n/a","fred_date":"n/a"
+  },
+  "risk":{
+    "fx_lvl":"MEDIUM","fx_col":"#C4901A",
+    "fx_note":"Managed float: central bank dampens volatility, but TWD trend can shift abruptly on policy changes. Annualized FX vol ≈ —.",
+    "ir_lvl":"LOW","ir_col":"#1A7A6B",
+    "ir_note":"Strong IG; low spreads; modest premium over core markets.",
+    "hedge_note":"<strong>FX:</strong> Cross-Currency Swap (CCS): pay fixed TWD / receive fixed USD. FX Forwards (per coupon date) to lock USD cost of local coupons. FRA to lock local floating rate before bond pricing date.<br/><strong>Rate:</strong> IRS in local currency. FRA 3–6 months before pricing to lock rate. Reliable market access."
+  },
+  "country_text":"Taiwan is a key market for Qualcomm and its sector. The central bank actively manages the TWD, smoothing volatility but introducing policy uncertainty for FX forecasts. For Qualcomm, this market represents material supply-chain, revenue, or regulatory exposure, making TWD dynamics and local interest rates directly relevant to its cost of capital when issuing debt in Taiwan.",
+  "charts":{
+    "stock":null,"financials":{"data": [{"type": "bar", "name": "Revenue", "x": [], "y": [], "marker": {"color": "#1A3A6B"}}, {"type": "bar", "name": "EBITDA", "x": [], "y": [], "marker": {"color": "#1A7A6B"}}, {"type": "bar", "name": "Net Income", "x": [], "y": [], "marker": {"color": "#C4901A"}}], "layout": {"title": {"text": "Annual Financials (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 50, "r": 20, "t": 40, "b": 50}}},
+    "bs":{"data": [{"type": "bar", "name": "Total Assets", "x": [], "y": [], "marker": {"color": "#1A3A6B"}, "opacity": 0.85}, {"type": "bar", "name": "Total Liabilities", "x": [], "y": [], "marker": {"color": "#C0392B"}, "opacity": 0.75}, {"type": "bar", "name": "Equity", "x": [], "y": [], "marker": {"color": "#1A7A6B"}, "opacity": 0.85}, {"type": "scatter", "name": "Total Debt", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#7D3C98", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Balance Sheet Evolution (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},"leverage":{"data": [{"type": "scatter", "name": "D/E Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C0392B", "width": 2}, "yaxis": "y"}, {"type": "scatter", "name": "Current Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}, "yaxis": "y2"}], "layout": {"title": {"text": "Leverage & Liquidity", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#C0392B", "title": {"text": "D/E", "font": {"color": "#C0392B"}}}, "yaxis2": {"overlaying": "y", "side": "right", "color": "#1A7A6B", "title": {"text": "Current Ratio", "font": {"color": "#1A7A6B"}}, "showgrid": false}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 60, "t": 40, "b": 50}}},"returns":{"data": [{"type": "scatter", "name": "ROE (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C4901A", "width": 2}}, {"type": "scatter", "name": "ROA (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A3A6B", "width": 2}}, {"type": "scatter", "name": "Net Margin (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Return & Margin Trends (%)", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "%"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},
+    "gdp":null,"cpi":null,"fx":null,"ca":null,
+    "rates":null,"spread":null,"geo":{"data": [{"type": "pie", "labels": ["China (incl. HK)", "South Korea", "United States", "Taiwan", "Japan", "Rest of World"], "values": [46, 13, 11, 9, 5, 16], "hole": 0.44, "textinfo": "label+percent", "textposition": "outside", "hovertemplate": "<b>%{label}</b><br>%{value}% of revenue<extra></extra>", "marker": {"colors": ["#1A3A6B", "#1A7A6B", "#C4901A", "#2E6FAD", "#8B5E3C", "#AAAAAA"], "line": {"color": "white", "width": 2}}, "insidetextorientation": "horizontal"}], "layout": {"title": {"text": "Geographic Revenue Mix (approx.)", "font": {"size": 13, "color": "#1A3A6B"}}, "showlegend": false, "margin": {"l": 10, "r": 10, "t": 40, "b": 10}, "plot_bgcolor": "white", "paper_bgcolor": "white"}}
+  },
+  "peers":`<table class="peer-table"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th><th>P/E</th><th>P/B</th><th>Beta</th><th>Div Yld</th></tr></thead><tbody><tr class="main-row"><td><strong>QCOM</strong></td><td>QCOM</td><td>—</td><td>—x</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>`
+},
+"JPM":{
+  "cfg":{
+    "ticker":"JPM","name":"JPMorgan Chase","country":"India",
+    "ccy":"INR","sov":"BBB-","regime":"Managed float",
+    "sector":"—","industry":"—",
+    "exchange":"—","grp":0,"grpLbl":"Sample",
+    "firmType":"sample"
+  },
+  "kpis":{
+    "price_s":"—","ytd_s":"—","ytd_cls":"down","ytd_sym":"▼",
+    "mc_s":"—","pe_s":"—",
+    "beta_s":"—","div_s":"—",
+    "rev_s":"—","ebitda_s":"—",
+    "net_s":"—","ndeb_s":"—",
+    "de_s":"—","cr_s":"—",
+    "em_s":"—","nm_s":"—",
+    "roa_s":"—","roe_s":"—",
+    "ic_s":"—","ta_s":"—",
+    "eq_s":"—",
+    "td_s":"—",
+    "ltd_s":"—",
+    "std_s":"—",
+    "lt_pct_s":"—",
+    "da_s":"—",
+    "biz":"",
+    "debt_text":"JPMorgan Chase carries total financial debt of undisclosed. Most existing debt is USD-denominated (standard for US-listed issuers). Issuing in INR in India would ADD INR-denominated obligations to the capital structure, creating a natural hedge for local-currency revenues while introducing FX translation risk on the principal for USD reporting.",
+    "fin_period":"n/a",
+    "bs_period":"n/a"
+  },
+  "macro":{
+    "gdp_s":"—","cpi_s":"—",
+    "ca_s":"— GDP","unemp_s":"—",
+    "fx_last":"—","fx_chg":"—","fx_lbl":"USD/INR",
+    "pol_s":"—",
+    "yld_s":"—",
+    "term_s":"—",
+    "cds_s":"230–390 bps",
+    "stance":"Unknown","stance_col":"#888",
+    "stance_desc":"Insufficient rate data to determine stance.",
+    "wb_year":"n/a","fred_date":"n/a"
+  },
+  "risk":{
+    "fx_lvl":"MEDIUM","fx_col":"#C4901A",
+    "fx_note":"Managed float: central bank dampens volatility, but INR trend can shift abruptly on policy changes. Annualized FX vol ≈ —.",
+    "ir_lvl":"MEDIUM–HIGH","ir_col":"#C0392B",
+    "ir_note":"Borderline IG; cliff risk if downgraded — HY funds exit; spread spike.",
+    "hedge_note":"<strong>FX:</strong> Cross-Currency Swap (CCS): pay fixed INR / receive fixed USD. FX Forwards (per coupon date) to lock USD cost of local coupons. FRA to lock local floating rate before bond pricing date.<br/><strong>Rate:</strong> FRA + CDS mandatory. Consider USD Eurobond + CCS as safer structure. Build in call option."
+  },
+  "country_text":"India is a key market for JPMorgan Chase and its sector. The central bank actively manages the INR, smoothing volatility but introducing policy uncertainty for FX forecasts. For JPMorgan Chase, this market represents material supply-chain, revenue, or regulatory exposure, making INR dynamics and local interest rates directly relevant to its cost of capital when issuing debt in India.",
+  "charts":{
+    "stock":null,"financials":{"data": [{"type": "bar", "name": "Revenue", "x": [], "y": [], "marker": {"color": "#1A3A6B"}}, {"type": "bar", "name": "EBITDA", "x": [], "y": [], "marker": {"color": "#1A7A6B"}}, {"type": "bar", "name": "Net Income", "x": [], "y": [], "marker": {"color": "#C4901A"}}], "layout": {"title": {"text": "Annual Financials (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 50, "r": 20, "t": 40, "b": 50}}},
+    "bs":{"data": [{"type": "bar", "name": "Total Assets", "x": [], "y": [], "marker": {"color": "#1A3A6B"}, "opacity": 0.85}, {"type": "bar", "name": "Total Liabilities", "x": [], "y": [], "marker": {"color": "#C0392B"}, "opacity": 0.75}, {"type": "bar", "name": "Equity", "x": [], "y": [], "marker": {"color": "#1A7A6B"}, "opacity": 0.85}, {"type": "scatter", "name": "Total Debt", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#7D3C98", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Balance Sheet Evolution (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},"leverage":{"data": [{"type": "scatter", "name": "D/E Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C0392B", "width": 2}, "yaxis": "y"}, {"type": "scatter", "name": "Current Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}, "yaxis": "y2"}], "layout": {"title": {"text": "Leverage & Liquidity", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#C0392B", "title": {"text": "D/E", "font": {"color": "#C0392B"}}}, "yaxis2": {"overlaying": "y", "side": "right", "color": "#1A7A6B", "title": {"text": "Current Ratio", "font": {"color": "#1A7A6B"}}, "showgrid": false}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 60, "t": 40, "b": 50}}},"returns":{"data": [{"type": "scatter", "name": "ROE (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C4901A", "width": 2}}, {"type": "scatter", "name": "ROA (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A3A6B", "width": 2}}, {"type": "scatter", "name": "Net Margin (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Return & Margin Trends (%)", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "%"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},
+    "gdp":null,"cpi":null,"fx":null,"ca":null,
+    "rates":null,"spread":null,"geo":{"data": [{"type": "pie", "labels": ["United States", "Europe", "Asia Pacific", "Latin America", "Middle East", "Rest of World"], "values": [57, 18, 13, 7, 3, 2], "hole": 0.44, "textinfo": "label+percent", "textposition": "outside", "hovertemplate": "<b>%{label}</b><br>%{value}% of revenue<extra></extra>", "marker": {"colors": ["#1A3A6B", "#1A7A6B", "#C4901A", "#2E6FAD", "#8B5E3C", "#AAAAAA"], "line": {"color": "white", "width": 2}}, "insidetextorientation": "horizontal"}], "layout": {"title": {"text": "Geographic Revenue Mix (approx.)", "font": {"size": 13, "color": "#1A3A6B"}}, "showlegend": false, "margin": {"l": 10, "r": 10, "t": 40, "b": 10}, "plot_bgcolor": "white", "paper_bgcolor": "white"}}
+  },
+  "peers":`<table class="peer-table"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th><th>P/E</th><th>P/B</th><th>Beta</th><th>Div Yld</th></tr></thead><tbody><tr class="main-row"><td><strong>JPM</strong></td><td>JPM</td><td>—</td><td>—x</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>`
+},
+"CL":{
+  "cfg":{
+    "ticker":"CL","name":"Colgate-Palmolive","country":"India",
+    "ccy":"INR","sov":"BBB-","regime":"Managed float",
+    "sector":"—","industry":"—",
+    "exchange":"—","grp":0,"grpLbl":"Sample",
+    "firmType":"sample"
+  },
+  "kpis":{
+    "price_s":"—","ytd_s":"—","ytd_cls":"down","ytd_sym":"▼",
+    "mc_s":"—","pe_s":"—",
+    "beta_s":"—","div_s":"—",
+    "rev_s":"—","ebitda_s":"—",
+    "net_s":"—","ndeb_s":"—",
+    "de_s":"—","cr_s":"—",
+    "em_s":"—","nm_s":"—",
+    "roa_s":"—","roe_s":"—",
+    "ic_s":"—","ta_s":"—",
+    "eq_s":"—",
+    "td_s":"—",
+    "ltd_s":"—",
+    "std_s":"—",
+    "lt_pct_s":"—",
+    "da_s":"—",
+    "biz":"",
+    "debt_text":"Colgate-Palmolive carries total financial debt of undisclosed. Most existing debt is USD-denominated (standard for US-listed issuers). Issuing in INR in India would ADD INR-denominated obligations to the capital structure, creating a natural hedge for local-currency revenues while introducing FX translation risk on the principal for USD reporting.",
+    "fin_period":"n/a",
+    "bs_period":"n/a"
+  },
+  "macro":{
+    "gdp_s":"—","cpi_s":"—",
+    "ca_s":"— GDP","unemp_s":"—",
+    "fx_last":"—","fx_chg":"—","fx_lbl":"USD/INR",
+    "pol_s":"—",
+    "yld_s":"—",
+    "term_s":"—",
+    "cds_s":"230–390 bps",
+    "stance":"Unknown","stance_col":"#888",
+    "stance_desc":"Insufficient rate data to determine stance.",
+    "wb_year":"n/a","fred_date":"n/a"
+  },
+  "risk":{
+    "fx_lvl":"MEDIUM","fx_col":"#C4901A",
+    "fx_note":"Managed float: central bank dampens volatility, but INR trend can shift abruptly on policy changes. Annualized FX vol ≈ —.",
+    "ir_lvl":"MEDIUM–HIGH","ir_col":"#C0392B",
+    "ir_note":"Borderline IG; cliff risk if downgraded — HY funds exit; spread spike.",
+    "hedge_note":"<strong>FX:</strong> Cross-Currency Swap (CCS): pay fixed INR / receive fixed USD. FX Forwards (per coupon date) to lock USD cost of local coupons. FRA to lock local floating rate before bond pricing date.<br/><strong>Rate:</strong> FRA + CDS mandatory. Consider USD Eurobond + CCS as safer structure. Build in call option."
+  },
+  "country_text":"India is a key market for Colgate-Palmolive and its sector. The central bank actively manages the INR, smoothing volatility but introducing policy uncertainty for FX forecasts. For Colgate-Palmolive, this market represents material supply-chain, revenue, or regulatory exposure, making INR dynamics and local interest rates directly relevant to its cost of capital when issuing debt in India.",
+  "charts":{
+    "stock":null,"financials":{"data": [{"type": "bar", "name": "Revenue", "x": [], "y": [], "marker": {"color": "#1A3A6B"}}, {"type": "bar", "name": "EBITDA", "x": [], "y": [], "marker": {"color": "#1A7A6B"}}, {"type": "bar", "name": "Net Income", "x": [], "y": [], "marker": {"color": "#C4901A"}}], "layout": {"title": {"text": "Annual Financials (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 50, "r": 20, "t": 40, "b": 50}}},
+    "bs":{"data": [{"type": "bar", "name": "Total Assets", "x": [], "y": [], "marker": {"color": "#1A3A6B"}, "opacity": 0.85}, {"type": "bar", "name": "Total Liabilities", "x": [], "y": [], "marker": {"color": "#C0392B"}, "opacity": 0.75}, {"type": "bar", "name": "Equity", "x": [], "y": [], "marker": {"color": "#1A7A6B"}, "opacity": 0.85}, {"type": "scatter", "name": "Total Debt", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#7D3C98", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Balance Sheet Evolution (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},"leverage":{"data": [{"type": "scatter", "name": "D/E Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C0392B", "width": 2}, "yaxis": "y"}, {"type": "scatter", "name": "Current Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}, "yaxis": "y2"}], "layout": {"title": {"text": "Leverage & Liquidity", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#C0392B", "title": {"text": "D/E", "font": {"color": "#C0392B"}}}, "yaxis2": {"overlaying": "y", "side": "right", "color": "#1A7A6B", "title": {"text": "Current Ratio", "font": {"color": "#1A7A6B"}}, "showgrid": false}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 60, "t": 40, "b": 50}}},"returns":{"data": [{"type": "scatter", "name": "ROE (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C4901A", "width": 2}}, {"type": "scatter", "name": "ROA (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A3A6B", "width": 2}}, {"type": "scatter", "name": "Net Margin (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Return & Margin Trends (%)", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "%"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},
+    "gdp":null,"cpi":null,"fx":null,"ca":null,
+    "rates":null,"spread":null,"geo":{"data": [{"type": "pie", "labels": ["Latin America", "United States", "Asia Pacific", "Europe", "Africa/Eurasia", "Rest of World"], "values": [23, 19, 20, 18, 10, 10], "hole": 0.44, "textinfo": "label+percent", "textposition": "outside", "hovertemplate": "<b>%{label}</b><br>%{value}% of revenue<extra></extra>", "marker": {"colors": ["#1A3A6B", "#1A7A6B", "#C4901A", "#2E6FAD", "#8B5E3C", "#AAAAAA"], "line": {"color": "white", "width": 2}}, "insidetextorientation": "horizontal"}], "layout": {"title": {"text": "Geographic Revenue Mix (approx.)", "font": {"size": 13, "color": "#1A3A6B"}}, "showlegend": false, "margin": {"l": 10, "r": 10, "t": 40, "b": 10}, "plot_bgcolor": "white", "paper_bgcolor": "white"}}
+  },
+  "peers":`<table class="peer-table"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th><th>P/E</th><th>P/B</th><th>Beta</th><th>Div Yld</th></tr></thead><tbody><tr class="main-row"><td><strong>CL</strong></td><td>CL</td><td>—</td><td>—x</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>`
+},
+"PM":{
+  "cfg":{
+    "ticker":"PM","name":"Philip Morris Int'l","country":"Indonesia",
+    "ccy":"IDR","sov":"BBB","regime":"Floating",
+    "sector":"—","industry":"—",
+    "exchange":"—","grp":0,"grpLbl":"Sample",
+    "firmType":"sample"
+  },
+  "kpis":{
+    "price_s":"—","ytd_s":"—","ytd_cls":"down","ytd_sym":"▼",
+    "mc_s":"—","pe_s":"—",
+    "beta_s":"—","div_s":"—",
+    "rev_s":"—","ebitda_s":"—",
+    "net_s":"—","ndeb_s":"—",
+    "de_s":"—","cr_s":"—",
+    "em_s":"—","nm_s":"—",
+    "roa_s":"—","roe_s":"—",
+    "ic_s":"—","ta_s":"—",
+    "eq_s":"—",
+    "td_s":"—",
+    "ltd_s":"—",
+    "std_s":"—",
+    "lt_pct_s":"—",
+    "da_s":"—",
+    "biz":"",
+    "debt_text":"Philip Morris Int'l carries total financial debt of undisclosed. Most existing debt is USD-denominated (standard for US-listed issuers). Issuing in IDR in Indonesia would ADD IDR-denominated obligations to the capital structure, creating a natural hedge for local-currency revenues while introducing FX translation risk on the principal for USD reporting.",
+    "fin_period":"n/a",
+    "bs_period":"n/a"
+  },
+  "macro":{
+    "gdp_s":"—","cpi_s":"—",
+    "ca_s":"— GDP","unemp_s":"—",
+    "fx_last":"—","fx_chg":"—","fx_lbl":"USD/IDR",
+    "pol_s":"—",
+    "yld_s":"—",
+    "term_s":"—",
+    "cds_s":"175–310 bps",
+    "stance":"Unknown","stance_col":"#888",
+    "stance_desc":"Insufficient rate data to determine stance.",
+    "wb_year":"n/a","fred_date":"n/a"
+  },
+  "risk":{
+    "fx_lvl":"MEDIUM–HIGH","fx_col":"#C0392B",
+    "fx_note":"Free float: IDR driven by market forces. Annualized FX vol ≈ —. USD-reporting issuers face meaningful translation and transaction risk on coupons and principal.",
+    "ir_lvl":"MEDIUM","ir_col":"#C4901A",
+    "ir_note":"Lowest broad IG; wide spreads; significant investor base loss if cut.",
+    "hedge_note":"<strong>FX:</strong> Full CCS essential: pay fixed IDR / receive fixed USD — locks both FX rate and rate differential. Rolling FX Forwards for each coupon payment date. FRA to lock local rate before issuance. FX Option collar for tail protection on principal.<br/><strong>Rate:</strong> IRS + CDS. FRA essential. Prefer shorter maturity (≤5yr) to limit rollover exposure."
+  },
+  "country_text":"Indonesia is a key market for Philip Morris Int'l and its sector. The freely floating IDR absorbs external shocks but exposes USD-reporting issuers to meaningful FX translation risk. For Philip Morris Int'l, this market represents material supply-chain, revenue, or regulatory exposure, making IDR dynamics and local interest rates directly relevant to its cost of capital when issuing debt in Indonesia.",
+  "charts":{
+    "stock":null,"financials":{"data": [{"type": "bar", "name": "Revenue", "x": [], "y": [], "marker": {"color": "#1A3A6B"}}, {"type": "bar", "name": "EBITDA", "x": [], "y": [], "marker": {"color": "#1A7A6B"}}, {"type": "bar", "name": "Net Income", "x": [], "y": [], "marker": {"color": "#C4901A"}}], "layout": {"title": {"text": "Annual Financials (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 50, "r": 20, "t": 40, "b": 50}}},
+    "bs":{"data": [{"type": "bar", "name": "Total Assets", "x": [], "y": [], "marker": {"color": "#1A3A6B"}, "opacity": 0.85}, {"type": "bar", "name": "Total Liabilities", "x": [], "y": [], "marker": {"color": "#C0392B"}, "opacity": 0.75}, {"type": "bar", "name": "Equity", "x": [], "y": [], "marker": {"color": "#1A7A6B"}, "opacity": 0.85}, {"type": "scatter", "name": "Total Debt", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#7D3C98", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Balance Sheet Evolution (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},"leverage":{"data": [{"type": "scatter", "name": "D/E Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C0392B", "width": 2}, "yaxis": "y"}, {"type": "scatter", "name": "Current Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}, "yaxis": "y2"}], "layout": {"title": {"text": "Leverage & Liquidity", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#C0392B", "title": {"text": "D/E", "font": {"color": "#C0392B"}}}, "yaxis2": {"overlaying": "y", "side": "right", "color": "#1A7A6B", "title": {"text": "Current Ratio", "font": {"color": "#1A7A6B"}}, "showgrid": false}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 60, "t": 40, "b": 50}}},"returns":{"data": [{"type": "scatter", "name": "ROE (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C4901A", "width": 2}}, {"type": "scatter", "name": "ROA (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A3A6B", "width": 2}}, {"type": "scatter", "name": "Net Margin (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Return & Margin Trends (%)", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "%"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},
+    "gdp":null,"cpi":null,"fx":null,"ca":null,
+    "rates":null,"spread":null,"geo":{"data": [{"type": "pie", "labels": ["European Union", "South/SE Asia", "Middle East & Africa", "East Asia", "Americas", "Rest of World"], "values": [27, 16, 18, 12, 12, 15], "hole": 0.44, "textinfo": "label+percent", "textposition": "outside", "hovertemplate": "<b>%{label}</b><br>%{value}% of revenue<extra></extra>", "marker": {"colors": ["#1A3A6B", "#1A7A6B", "#C4901A", "#2E6FAD", "#8B5E3C", "#AAAAAA"], "line": {"color": "white", "width": 2}}, "insidetextorientation": "horizontal"}], "layout": {"title": {"text": "Geographic Revenue Mix (approx.)", "font": {"size": 13, "color": "#1A3A6B"}}, "showlegend": false, "margin": {"l": 10, "r": 10, "t": 40, "b": 10}, "plot_bgcolor": "white", "paper_bgcolor": "white"}}
+  },
+  "peers":`<table class="peer-table"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th><th>P/E</th><th>P/B</th><th>Beta</th><th>Div Yld</th></tr></thead><tbody><tr class="main-row"><td><strong>PM</strong></td><td>PM</td><td>—</td><td>—x</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>`
+},
+"INTC":{
+  "cfg":{
+    "ticker":"INTC","name":"Intel","country":"China",
+    "ccy":"CNY","sov":"A+","regime":"Managed float (crawling peg)",
+    "sector":"—","industry":"—",
+    "exchange":"—","grp":0,"grpLbl":"Sample",
+    "firmType":"sample"
+  },
+  "kpis":{
+    "price_s":"—","ytd_s":"—","ytd_cls":"down","ytd_sym":"▼",
+    "mc_s":"—","pe_s":"—",
+    "beta_s":"—","div_s":"—",
+    "rev_s":"—","ebitda_s":"—",
+    "net_s":"—","ndeb_s":"—",
+    "de_s":"—","cr_s":"—",
+    "em_s":"—","nm_s":"—",
+    "roa_s":"—","roe_s":"—",
+    "ic_s":"—","ta_s":"—",
+    "eq_s":"—",
+    "td_s":"—",
+    "ltd_s":"—",
+    "std_s":"—",
+    "lt_pct_s":"—",
+    "da_s":"—",
+    "biz":"",
+    "debt_text":"Intel carries total financial debt of undisclosed. Most existing debt is USD-denominated (standard for US-listed issuers). Issuing in CNY in China would ADD CNY-denominated obligations to the capital structure, creating a natural hedge for local-currency revenues while introducing FX translation risk on the principal for USD reporting.",
+    "fin_period":"n/a",
+    "bs_period":"n/a"
+  },
+  "macro":{
+    "gdp_s":"—","cpi_s":"—",
+    "ca_s":"— GDP","unemp_s":"—",
+    "fx_last":"—","fx_chg":"—","fx_lbl":"USD/CNY",
+    "pol_s":"—",
+    "yld_s":"—",
+    "term_s":"—",
+    "cds_s":"55–115 bps",
+    "stance":"Unknown","stance_col":"#888",
+    "stance_desc":"Insufficient rate data to determine stance.",
+    "wb_year":"n/a","fred_date":"n/a"
+  },
+  "risk":{
+    "fx_lvl":"LOW–MEDIUM","fx_col":"#C4901A",
+    "fx_note":"Fixed/pegged CNY: minimal day-to-day volatility, but structural imbalances can accumulate and trigger sudden devaluations — a tail risk for local-currency bond issuers.",
+    "ir_lvl":"LOW","ir_col":"#1A7A6B",
+    "ir_note":"Solid IG; moderate spread (~50–100 bps); generally reliable market access.",
+    "hedge_note":"<strong>FX:</strong> FX Forwards on each coupon date (peg keeps cost low). Cross-Currency Swap (CCS) recommended if tenor > 2yr to hedge devaluation tail risk. Monitor FX reserve levels as early-warning indicator.<br/><strong>Rate:</strong> IRS + FRA before pricing. Consider benchmark USD Eurobond + CCS if local market is thin."
+  },
+  "country_text":"China is a key market for Intel and its sector. The CNY is pegged — low daily FX volatility but devaluation tail risk if reserves are depleted. For Intel, this market represents material supply-chain, revenue, or regulatory exposure, making CNY dynamics and local interest rates directly relevant to its cost of capital when issuing debt in China.",
+  "charts":{
+    "stock":null,"financials":{"data": [{"type": "bar", "name": "Revenue", "x": [], "y": [], "marker": {"color": "#1A3A6B"}}, {"type": "bar", "name": "EBITDA", "x": [], "y": [], "marker": {"color": "#1A7A6B"}}, {"type": "bar", "name": "Net Income", "x": [], "y": [], "marker": {"color": "#C4901A"}}], "layout": {"title": {"text": "Annual Financials (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 50, "r": 20, "t": 40, "b": 50}}},
+    "bs":{"data": [{"type": "bar", "name": "Total Assets", "x": [], "y": [], "marker": {"color": "#1A3A6B"}, "opacity": 0.85}, {"type": "bar", "name": "Total Liabilities", "x": [], "y": [], "marker": {"color": "#C0392B"}, "opacity": 0.75}, {"type": "bar", "name": "Equity", "x": [], "y": [], "marker": {"color": "#1A7A6B"}, "opacity": 0.85}, {"type": "scatter", "name": "Total Debt", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#7D3C98", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Balance Sheet Evolution (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},"leverage":{"data": [{"type": "scatter", "name": "D/E Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C0392B", "width": 2}, "yaxis": "y"}, {"type": "scatter", "name": "Current Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}, "yaxis": "y2"}], "layout": {"title": {"text": "Leverage & Liquidity", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#C0392B", "title": {"text": "D/E", "font": {"color": "#C0392B"}}}, "yaxis2": {"overlaying": "y", "side": "right", "color": "#1A7A6B", "title": {"text": "Current Ratio", "font": {"color": "#1A7A6B"}}, "showgrid": false}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 60, "t": 40, "b": 50}}},"returns":{"data": [{"type": "scatter", "name": "ROE (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C4901A", "width": 2}}, {"type": "scatter", "name": "ROA (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A3A6B", "width": 2}}, {"type": "scatter", "name": "Net Margin (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Return & Margin Trends (%)", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "%"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},
+    "gdp":null,"cpi":null,"fx":null,"ca":null,
+    "rates":null,"spread":null,"geo":{"data": [{"type": "pie", "labels": ["China (incl. HK)", "United States", "Singapore", "Taiwan", "Germany", "Rest of World"], "values": [27, 24, 12, 8, 5, 24], "hole": 0.44, "textinfo": "label+percent", "textposition": "outside", "hovertemplate": "<b>%{label}</b><br>%{value}% of revenue<extra></extra>", "marker": {"colors": ["#1A3A6B", "#1A7A6B", "#C4901A", "#2E6FAD", "#8B5E3C", "#AAAAAA"], "line": {"color": "white", "width": 2}}, "insidetextorientation": "horizontal"}], "layout": {"title": {"text": "Geographic Revenue Mix (approx.)", "font": {"size": 13, "color": "#1A3A6B"}}, "showlegend": false, "margin": {"l": 10, "r": 10, "t": 40, "b": 10}, "plot_bgcolor": "white", "paper_bgcolor": "white"}}
+  },
+  "peers":`<table class="peer-table"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th><th>P/E</th><th>P/B</th><th>Beta</th><th>Div Yld</th></tr></thead><tbody><tr class="main-row"><td><strong>INTC</strong></td><td>INTC</td><td>—</td><td>—x</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>`
+},
+"WMT":{
+  "cfg":{
+    "ticker":"WMT","name":"Walmart","country":"Mexico",
+    "ccy":"MXN","sov":"BB+","regime":"Floating",
+    "sector":"—","industry":"—",
+    "exchange":"—","grp":1,"grpLbl":"Group 1",
+    "firmType":"project"
+  },
+  "kpis":{
+    "price_s":"—","ytd_s":"—","ytd_cls":"down","ytd_sym":"▼",
+    "mc_s":"—","pe_s":"—",
+    "beta_s":"—","div_s":"—",
+    "rev_s":"—","ebitda_s":"—",
+    "net_s":"—","ndeb_s":"—",
+    "de_s":"—","cr_s":"—",
+    "em_s":"—","nm_s":"—",
+    "roa_s":"—","roe_s":"—",
+    "ic_s":"—","ta_s":"—",
+    "eq_s":"—",
+    "td_s":"—",
+    "ltd_s":"—",
+    "std_s":"—",
+    "lt_pct_s":"—",
+    "da_s":"—",
+    "biz":"",
+    "debt_text":"Walmart carries total financial debt of undisclosed. Most existing debt is USD-denominated (standard for US-listed issuers). Issuing in MXN in Mexico would ADD MXN-denominated obligations to the capital structure, creating a natural hedge for local-currency revenues while introducing FX translation risk on the principal for USD reporting.",
+    "fin_period":"n/a",
+    "bs_period":"n/a"
+  },
+  "macro":{
+    "gdp_s":"—","cpi_s":"—",
+    "ca_s":"— GDP","unemp_s":"—",
+    "fx_last":"—","fx_chg":"—","fx_lbl":"USD/MXN",
+    "pol_s":"—",
+    "yld_s":"—",
+    "term_s":"—",
+    "cds_s":"340–500 bps",
+    "stance":"Unknown","stance_col":"#888",
+    "stance_desc":"Insufficient rate data to determine stance.",
+    "wb_year":"n/a","fred_date":"n/a"
+  },
+  "risk":{
+    "fx_lvl":"MEDIUM–HIGH","fx_col":"#C0392B",
+    "fx_note":"Free float: MXN driven by market forces. Annualized FX vol ≈ —. USD-reporting issuers face meaningful translation and transaction risk on coupons and principal.",
+    "ir_lvl":"HIGH","ir_col":"#C0392B",
+    "ir_note":"Sub-IG (speculative); HY-only investor base; wide spreads; volatile access.",
+    "hedge_note":"<strong>FX:</strong> Full CCS essential: pay fixed MXN / receive fixed USD — locks both FX rate and rate differential. Rolling FX Forwards for each coupon payment date. FRA to lock local rate before issuance. FX Option collar for tail protection on principal.<br/><strong>Rate:</strong> USD Eurobond + Full CCS strongly preferred over local currency issuance. FRA if local market used."
+  },
+  "country_text":"Mexico is a key market for Walmart and its sector. The freely floating MXN absorbs external shocks but exposes USD-reporting issuers to meaningful FX translation risk. For Walmart, this market represents material supply-chain, revenue, or regulatory exposure, making MXN dynamics and local interest rates directly relevant to its cost of capital when issuing debt in Mexico.",
+  "charts":{
+    "stock":null,"financials":{"data": [{"type": "bar", "name": "Revenue", "x": [], "y": [], "marker": {"color": "#1A3A6B"}}, {"type": "bar", "name": "EBITDA", "x": [], "y": [], "marker": {"color": "#1A7A6B"}}, {"type": "bar", "name": "Net Income", "x": [], "y": [], "marker": {"color": "#C4901A"}}], "layout": {"title": {"text": "Annual Financials (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 50, "r": 20, "t": 40, "b": 50}}},
+    "bs":{"data": [{"type": "bar", "name": "Total Assets", "x": [], "y": [], "marker": {"color": "#1A3A6B"}, "opacity": 0.85}, {"type": "bar", "name": "Total Liabilities", "x": [], "y": [], "marker": {"color": "#C0392B"}, "opacity": 0.75}, {"type": "bar", "name": "Equity", "x": [], "y": [], "marker": {"color": "#1A7A6B"}, "opacity": 0.85}, {"type": "scatter", "name": "Total Debt", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#7D3C98", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Balance Sheet Evolution (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},"leverage":{"data": [{"type": "scatter", "name": "D/E Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C0392B", "width": 2}, "yaxis": "y"}, {"type": "scatter", "name": "Current Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}, "yaxis": "y2"}], "layout": {"title": {"text": "Leverage & Liquidity", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#C0392B", "title": {"text": "D/E", "font": {"color": "#C0392B"}}}, "yaxis2": {"overlaying": "y", "side": "right", "color": "#1A7A6B", "title": {"text": "Current Ratio", "font": {"color": "#1A7A6B"}}, "showgrid": false}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 60, "t": 40, "b": 50}}},"returns":{"data": [{"type": "scatter", "name": "ROE (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C4901A", "width": 2}}, {"type": "scatter", "name": "ROA (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A3A6B", "width": 2}}, {"type": "scatter", "name": "Net Margin (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Return & Margin Trends (%)", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "%"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},
+    "gdp":null,"cpi":null,"fx":null,"ca":null,
+    "rates":null,"spread":null,"geo":{"data": [{"type": "pie", "labels": ["United States", "Mexico", "China", "Canada", "United Kingdom", "Rest of World"], "values": [69, 7, 5, 4, 3, 12], "hole": 0.44, "textinfo": "label+percent", "textposition": "outside", "hovertemplate": "<b>%{label}</b><br>%{value}% of revenue<extra></extra>", "marker": {"colors": ["#1A3A6B", "#1A7A6B", "#C4901A", "#2E6FAD", "#8B5E3C", "#AAAAAA"], "line": {"color": "white", "width": 2}}, "insidetextorientation": "horizontal"}], "layout": {"title": {"text": "Geographic Revenue Mix (approx.)", "font": {"size": 13, "color": "#1A3A6B"}}, "showlegend": false, "margin": {"l": 10, "r": 10, "t": 40, "b": 10}, "plot_bgcolor": "white", "paper_bgcolor": "white"}}
+  },
+  "peers":`<table class="peer-table"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th><th>P/E</th><th>P/B</th><th>Beta</th><th>Div Yld</th></tr></thead><tbody><tr class="main-row"><td><strong>WMT</strong></td><td>WMT</td><td>—</td><td>—x</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>`
+},
+"C":{
+  "cfg":{
+    "ticker":"C","name":"Citigroup","country":"Brazil",
+    "ccy":"BRL","sov":"BB","regime":"Floating",
+    "sector":"—","industry":"—",
+    "exchange":"—","grp":2,"grpLbl":"Group 2",
+    "firmType":"project"
+  },
+  "kpis":{
+    "price_s":"—","ytd_s":"—","ytd_cls":"down","ytd_sym":"▼",
+    "mc_s":"—","pe_s":"—",
+    "beta_s":"—","div_s":"—",
+    "rev_s":"—","ebitda_s":"—",
+    "net_s":"—","ndeb_s":"—",
+    "de_s":"—","cr_s":"—",
+    "em_s":"—","nm_s":"—",
+    "roa_s":"—","roe_s":"—",
+    "ic_s":"—","ta_s":"—",
+    "eq_s":"—",
+    "td_s":"—",
+    "ltd_s":"—",
+    "std_s":"—",
+    "lt_pct_s":"—",
+    "da_s":"—",
+    "biz":"",
+    "debt_text":"Citigroup carries total financial debt of undisclosed. Most existing debt is USD-denominated (standard for US-listed issuers). Issuing in BRL in Brazil would ADD BRL-denominated obligations to the capital structure, creating a natural hedge for local-currency revenues while introducing FX translation risk on the principal for USD reporting.",
+    "fin_period":"n/a",
+    "bs_period":"n/a"
+  },
+  "macro":{
+    "gdp_s":"—","cpi_s":"—",
+    "ca_s":"— GDP","unemp_s":"—",
+    "fx_last":"—","fx_chg":"—","fx_lbl":"USD/BRL",
+    "pol_s":"—",
+    "yld_s":"—",
+    "term_s":"—",
+    "cds_s":"440–640 bps",
+    "stance":"Unknown","stance_col":"#888",
+    "stance_desc":"Insufficient rate data to determine stance.",
+    "wb_year":"n/a","fred_date":"n/a"
+  },
+  "risk":{
+    "fx_lvl":"MEDIUM–HIGH","fx_col":"#C0392B",
+    "fx_note":"Free float: BRL driven by market forces. Annualized FX vol ≈ —. USD-reporting issuers face meaningful translation and transaction risk on coupons and principal.",
+    "ir_lvl":"HIGH","ir_col":"#C0392B",
+    "ir_note":"Speculative; spreads 300–500 bps+; primary market can close in risk-off.",
+    "hedge_note":"<strong>FX:</strong> Full CCS essential: pay fixed BRL / receive fixed USD — locks both FX rate and rate differential. Rolling FX Forwards for each coupon payment date. FRA to lock local rate before issuance. FX Option collar for tail protection on principal.<br/><strong>Rate:</strong> USD Eurobond + CCS recommended. Local issuance requires FRA + sovereign CDS + FX option collar."
+  },
+  "country_text":"Brazil is a key market for Citigroup and its sector. The freely floating BRL absorbs external shocks but exposes USD-reporting issuers to meaningful FX translation risk. For Citigroup, this market represents material supply-chain, revenue, or regulatory exposure, making BRL dynamics and local interest rates directly relevant to its cost of capital when issuing debt in Brazil.",
+  "charts":{
+    "stock":null,"financials":{"data": [{"type": "bar", "name": "Revenue", "x": [], "y": [], "marker": {"color": "#1A3A6B"}}, {"type": "bar", "name": "EBITDA", "x": [], "y": [], "marker": {"color": "#1A7A6B"}}, {"type": "bar", "name": "Net Income", "x": [], "y": [], "marker": {"color": "#C4901A"}}], "layout": {"title": {"text": "Annual Financials (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 50, "r": 20, "t": 40, "b": 50}}},
+    "bs":{"data": [{"type": "bar", "name": "Total Assets", "x": [], "y": [], "marker": {"color": "#1A3A6B"}, "opacity": 0.85}, {"type": "bar", "name": "Total Liabilities", "x": [], "y": [], "marker": {"color": "#C0392B"}, "opacity": 0.75}, {"type": "bar", "name": "Equity", "x": [], "y": [], "marker": {"color": "#1A7A6B"}, "opacity": 0.85}, {"type": "scatter", "name": "Total Debt", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#7D3C98", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Balance Sheet Evolution (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},"leverage":{"data": [{"type": "scatter", "name": "D/E Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C0392B", "width": 2}, "yaxis": "y"}, {"type": "scatter", "name": "Current Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}, "yaxis": "y2"}], "layout": {"title": {"text": "Leverage & Liquidity", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#C0392B", "title": {"text": "D/E", "font": {"color": "#C0392B"}}}, "yaxis2": {"overlaying": "y", "side": "right", "color": "#1A7A6B", "title": {"text": "Current Ratio", "font": {"color": "#1A7A6B"}}, "showgrid": false}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 60, "t": 40, "b": 50}}},"returns":{"data": [{"type": "scatter", "name": "ROE (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C4901A", "width": 2}}, {"type": "scatter", "name": "ROA (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A3A6B", "width": 2}}, {"type": "scatter", "name": "Net Margin (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Return & Margin Trends (%)", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "%"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},
+    "gdp":null,"cpi":null,"fx":null,"ca":null,
+    "rates":null,"spread":null,"geo":{"data": [{"type": "pie", "labels": ["United States", "Europe/ME/Africa", "Asia Pacific", "Mexico", "Latin America", "Rest of World"], "values": [53, 18, 12, 8, 6, 3], "hole": 0.44, "textinfo": "label+percent", "textposition": "outside", "hovertemplate": "<b>%{label}</b><br>%{value}% of revenue<extra></extra>", "marker": {"colors": ["#1A3A6B", "#1A7A6B", "#C4901A", "#2E6FAD", "#8B5E3C", "#AAAAAA"], "line": {"color": "white", "width": 2}}, "insidetextorientation": "horizontal"}], "layout": {"title": {"text": "Geographic Revenue Mix (approx.)", "font": {"size": 13, "color": "#1A3A6B"}}, "showlegend": false, "margin": {"l": 10, "r": 10, "t": 40, "b": 10}, "plot_bgcolor": "white", "paper_bgcolor": "white"}}
+  },
+  "peers":`<table class="peer-table"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th><th>P/E</th><th>P/B</th><th>Beta</th><th>Div Yld</th></tr></thead><tbody><tr class="main-row"><td><strong>C</strong></td><td>C</td><td>—</td><td>—x</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>`
+},
+"CVX":{
+  "cfg":{
+    "ticker":"CVX","name":"Chevron","country":"Australia",
+    "ccy":"AUD","sov":"AAA","regime":"Floating",
+    "sector":"—","industry":"—",
+    "exchange":"—","grp":3,"grpLbl":"Group 3",
+    "firmType":"project"
+  },
+  "kpis":{
+    "price_s":"—","ytd_s":"—","ytd_cls":"down","ytd_sym":"▼",
+    "mc_s":"—","pe_s":"—",
+    "beta_s":"—","div_s":"—",
+    "rev_s":"—","ebitda_s":"—",
+    "net_s":"—","ndeb_s":"—",
+    "de_s":"—","cr_s":"—",
+    "em_s":"—","nm_s":"—",
+    "roa_s":"—","roe_s":"—",
+    "ic_s":"—","ta_s":"—",
+    "eq_s":"—",
+    "td_s":"—",
+    "ltd_s":"—",
+    "std_s":"—",
+    "lt_pct_s":"—",
+    "da_s":"—",
+    "biz":"",
+    "debt_text":"Chevron carries total financial debt of undisclosed. Most existing debt is USD-denominated (standard for US-listed issuers). Issuing in AUD in Australia would ADD AUD-denominated obligations to the capital structure, creating a natural hedge for local-currency revenues while introducing FX translation risk on the principal for USD reporting.",
+    "fin_period":"n/a",
+    "bs_period":"n/a"
+  },
+  "macro":{
+    "gdp_s":"—","cpi_s":"—",
+    "ca_s":"— GDP","unemp_s":"—",
+    "fx_last":"—","fx_chg":"—","fx_lbl":"AUD/USD",
+    "pol_s":"—",
+    "yld_s":"—",
+    "term_s":"—",
+    "cds_s":"5–20 bps",
+    "stance":"Unknown","stance_col":"#888",
+    "stance_desc":"Insufficient rate data to determine stance.",
+    "wb_year":"n/a","fred_date":"n/a"
+  },
+  "risk":{
+    "fx_lvl":"MEDIUM–HIGH","fx_col":"#C0392B",
+    "fx_note":"Free float: AUD driven by market forces. Annualized FX vol ≈ —. USD-reporting issuers face meaningful translation and transaction risk on coupons and principal.",
+    "ir_lvl":"MINIMAL","ir_col":"#1A7A6B",
+    "ir_note":"Near-zero default risk; sub-10 bps spread over UST; broadest institutional investor base.",
+    "hedge_note":"<strong>FX:</strong> Full CCS essential: pay fixed AUD / receive fixed USD — locks both FX rate and rate differential. Rolling FX Forwards for each coupon payment date. FRA to lock local rate before issuance. FX Option collar for tail protection on principal.<br/><strong>Rate:</strong> IRS (pay fixed local / receive SOFR) at very tight spreads. Favorable all-in cost vs. USD bond."
+  },
+  "country_text":"Australia is a key market for Chevron and its sector. The freely floating AUD absorbs external shocks but exposes USD-reporting issuers to meaningful FX translation risk. For Chevron, this market represents material supply-chain, revenue, or regulatory exposure, making AUD dynamics and local interest rates directly relevant to its cost of capital when issuing debt in Australia.",
+  "charts":{
+    "stock":null,"financials":{"data": [{"type": "bar", "name": "Revenue", "x": [], "y": [], "marker": {"color": "#1A3A6B"}}, {"type": "bar", "name": "EBITDA", "x": [], "y": [], "marker": {"color": "#1A7A6B"}}, {"type": "bar", "name": "Net Income", "x": [], "y": [], "marker": {"color": "#C4901A"}}], "layout": {"title": {"text": "Annual Financials (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 50, "r": 20, "t": 40, "b": 50}}},
+    "bs":{"data": [{"type": "bar", "name": "Total Assets", "x": [], "y": [], "marker": {"color": "#1A3A6B"}, "opacity": 0.85}, {"type": "bar", "name": "Total Liabilities", "x": [], "y": [], "marker": {"color": "#C0392B"}, "opacity": 0.75}, {"type": "bar", "name": "Equity", "x": [], "y": [], "marker": {"color": "#1A7A6B"}, "opacity": 0.85}, {"type": "scatter", "name": "Total Debt", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#7D3C98", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Balance Sheet Evolution (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},"leverage":{"data": [{"type": "scatter", "name": "D/E Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C0392B", "width": 2}, "yaxis": "y"}, {"type": "scatter", "name": "Current Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}, "yaxis": "y2"}], "layout": {"title": {"text": "Leverage & Liquidity", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#C0392B", "title": {"text": "D/E", "font": {"color": "#C0392B"}}}, "yaxis2": {"overlaying": "y", "side": "right", "color": "#1A7A6B", "title": {"text": "Current Ratio", "font": {"color": "#1A7A6B"}}, "showgrid": false}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 60, "t": 40, "b": 50}}},"returns":{"data": [{"type": "scatter", "name": "ROE (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C4901A", "width": 2}}, {"type": "scatter", "name": "ROA (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A3A6B", "width": 2}}, {"type": "scatter", "name": "Net Margin (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Return & Margin Trends (%)", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "%"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},
+    "gdp":null,"cpi":null,"fx":null,"ca":null,
+    "rates":null,"spread":null,"geo":{"data": [{"type": "pie", "labels": ["United States", "Australia", "Kazakhstan", "Nigeria", "Canada", "Rest of World"], "values": [41, 14, 7, 5, 4, 29], "hole": 0.44, "textinfo": "label+percent", "textposition": "outside", "hovertemplate": "<b>%{label}</b><br>%{value}% of revenue<extra></extra>", "marker": {"colors": ["#1A3A6B", "#1A7A6B", "#C4901A", "#2E6FAD", "#8B5E3C", "#AAAAAA"], "line": {"color": "white", "width": 2}}, "insidetextorientation": "horizontal"}], "layout": {"title": {"text": "Geographic Revenue Mix (approx.)", "font": {"size": 13, "color": "#1A3A6B"}}, "showlegend": false, "margin": {"l": 10, "r": 10, "t": 40, "b": 10}, "plot_bgcolor": "white", "paper_bgcolor": "white"}}
+  },
+  "peers":`<table class="peer-table"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th><th>P/E</th><th>P/B</th><th>Beta</th><th>Div Yld</th></tr></thead><tbody><tr class="main-row"><td><strong>CVX</strong></td><td>CVX</td><td>—</td><td>—x</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>`
+},
+"F":{
+  "cfg":{
+    "ticker":"F","name":"Ford","country":"South Africa",
+    "ccy":"ZAR","sov":"BB-","regime":"Floating",
+    "sector":"—","industry":"—",
+    "exchange":"—","grp":4,"grpLbl":"Group 4",
+    "firmType":"project"
+  },
+  "kpis":{
+    "price_s":"—","ytd_s":"—","ytd_cls":"down","ytd_sym":"▼",
+    "mc_s":"—","pe_s":"—",
+    "beta_s":"—","div_s":"—",
+    "rev_s":"—","ebitda_s":"—",
+    "net_s":"—","ndeb_s":"—",
+    "de_s":"—","cr_s":"—",
+    "em_s":"—","nm_s":"—",
+    "roa_s":"—","roe_s":"—",
+    "ic_s":"—","ta_s":"—",
+    "eq_s":"—",
+    "td_s":"—",
+    "ltd_s":"—",
+    "std_s":"—",
+    "lt_pct_s":"—",
+    "da_s":"—",
+    "biz":"",
+    "debt_text":"Ford carries total financial debt of undisclosed. Most existing debt is USD-denominated (standard for US-listed issuers). Issuing in ZAR in South Africa would ADD ZAR-denominated obligations to the capital structure, creating a natural hedge for local-currency revenues while introducing FX translation risk on the principal for USD reporting.",
+    "fin_period":"n/a",
+    "bs_period":"n/a"
+  },
+  "macro":{
+    "gdp_s":"—","cpi_s":"—",
+    "ca_s":"— GDP","unemp_s":"—",
+    "fx_last":"—","fx_chg":"—","fx_lbl":"USD/ZAR",
+    "pol_s":"—",
+    "yld_s":"—",
+    "term_s":"—",
+    "cds_s":"530–780 bps",
+    "stance":"Unknown","stance_col":"#888",
+    "stance_desc":"Insufficient rate data to determine stance.",
+    "wb_year":"n/a","fred_date":"n/a"
+  },
+  "risk":{
+    "fx_lvl":"MEDIUM–HIGH","fx_col":"#C0392B",
+    "fx_note":"Free float: ZAR driven by market forces. Annualized FX vol ≈ —. USD-reporting issuers face meaningful translation and transaction risk on coupons and principal.",
+    "ir_lvl":"HIGH","ir_col":"#C0392B",
+    "ir_note":"Speculative; elevated default perception; limited institutional demand.",
+    "hedge_note":"<strong>FX:</strong> Full CCS essential: pay fixed ZAR / receive fixed USD — locks both FX rate and rate differential. Rolling FX Forwards for each coupon payment date. FRA to lock local rate before issuance. FX Option collar for tail protection on principal.<br/><strong>Rate:</strong> USD structure with full hedging (CCS + FX forward + CDS) preferred. Local market access uncertain."
+  },
+  "country_text":"South Africa is a key market for Ford and its sector. The freely floating ZAR absorbs external shocks but exposes USD-reporting issuers to meaningful FX translation risk. For Ford, this market represents material supply-chain, revenue, or regulatory exposure, making ZAR dynamics and local interest rates directly relevant to its cost of capital when issuing debt in South Africa.",
+  "charts":{
+    "stock":null,"financials":{"data": [{"type": "bar", "name": "Revenue", "x": [], "y": [], "marker": {"color": "#1A3A6B"}}, {"type": "bar", "name": "EBITDA", "x": [], "y": [], "marker": {"color": "#1A7A6B"}}, {"type": "bar", "name": "Net Income", "x": [], "y": [], "marker": {"color": "#C4901A"}}], "layout": {"title": {"text": "Annual Financials (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 50, "r": 20, "t": 40, "b": 50}}},
+    "bs":{"data": [{"type": "bar", "name": "Total Assets", "x": [], "y": [], "marker": {"color": "#1A3A6B"}, "opacity": 0.85}, {"type": "bar", "name": "Total Liabilities", "x": [], "y": [], "marker": {"color": "#C0392B"}, "opacity": 0.75}, {"type": "bar", "name": "Equity", "x": [], "y": [], "marker": {"color": "#1A7A6B"}, "opacity": 0.85}, {"type": "scatter", "name": "Total Debt", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#7D3C98", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Balance Sheet Evolution (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},"leverage":{"data": [{"type": "scatter", "name": "D/E Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C0392B", "width": 2}, "yaxis": "y"}, {"type": "scatter", "name": "Current Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}, "yaxis": "y2"}], "layout": {"title": {"text": "Leverage & Liquidity", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#C0392B", "title": {"text": "D/E", "font": {"color": "#C0392B"}}}, "yaxis2": {"overlaying": "y", "side": "right", "color": "#1A7A6B", "title": {"text": "Current Ratio", "font": {"color": "#1A7A6B"}}, "showgrid": false}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 60, "t": 40, "b": 50}}},"returns":{"data": [{"type": "scatter", "name": "ROE (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C4901A", "width": 2}}, {"type": "scatter", "name": "ROA (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A3A6B", "width": 2}}, {"type": "scatter", "name": "Net Margin (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Return & Margin Trends (%)", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "%"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},
+    "gdp":null,"cpi":null,"fx":null,"ca":null,
+    "rates":null,"spread":null,"geo":{"data": [{"type": "pie", "labels": ["United States", "Europe", "Canada", "China", "South America", "Rest of World"], "values": [64, 16, 5, 5, 4, 6], "hole": 0.44, "textinfo": "label+percent", "textposition": "outside", "hovertemplate": "<b>%{label}</b><br>%{value}% of revenue<extra></extra>", "marker": {"colors": ["#1A3A6B", "#1A7A6B", "#C4901A", "#2E6FAD", "#8B5E3C", "#AAAAAA"], "line": {"color": "white", "width": 2}}, "insidetextorientation": "horizontal"}], "layout": {"title": {"text": "Geographic Revenue Mix (approx.)", "font": {"size": 13, "color": "#1A3A6B"}}, "showlegend": false, "margin": {"l": 10, "r": 10, "t": 40, "b": 10}, "plot_bgcolor": "white", "paper_bgcolor": "white"}}
+  },
+  "peers":`<table class="peer-table"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th><th>P/E</th><th>P/B</th><th>Beta</th><th>Div Yld</th></tr></thead><tbody><tr class="main-row"><td><strong>F</strong></td><td>F</td><td>—</td><td>—x</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>`
+},
+"GOOGL":{
+  "cfg":{
+    "ticker":"GOOGL","name":"Alphabet","country":"Spain",
+    "ccy":"EUR","sov":"A","regime":"Euro (monetary union)",
+    "sector":"—","industry":"—",
+    "exchange":"—","grp":5,"grpLbl":"Group 5",
+    "firmType":"project"
+  },
+  "kpis":{
+    "price_s":"—","ytd_s":"—","ytd_cls":"down","ytd_sym":"▼",
+    "mc_s":"—","pe_s":"—",
+    "beta_s":"—","div_s":"—",
+    "rev_s":"—","ebitda_s":"—",
+    "net_s":"—","ndeb_s":"—",
+    "de_s":"—","cr_s":"—",
+    "em_s":"—","nm_s":"—",
+    "roa_s":"—","roe_s":"—",
+    "ic_s":"—","ta_s":"—",
+    "eq_s":"—",
+    "td_s":"—",
+    "ltd_s":"—",
+    "std_s":"—",
+    "lt_pct_s":"—",
+    "da_s":"—",
+    "biz":"",
+    "debt_text":"Alphabet carries total financial debt of undisclosed. Most existing debt is USD-denominated (standard for US-listed issuers). Issuing in EUR in Spain would ADD EUR-denominated obligations to the capital structure, creating a natural hedge for local-currency revenues while introducing FX translation risk on the principal for USD reporting.",
+    "fin_period":"n/a",
+    "bs_period":"n/a"
+  },
+  "macro":{
+    "gdp_s":"—","cpi_s":"—",
+    "ca_s":"— GDP","unemp_s":"—",
+    "fx_last":"—","fx_chg":"—","fx_lbl":"EUR/USD",
+    "pol_s":"—",
+    "yld_s":"—",
+    "term_s":"—",
+    "cds_s":"80–155 bps",
+    "stance":"Unknown","stance_col":"#888",
+    "stance_desc":"Insufficient rate data to determine stance.",
+    "wb_year":"n/a","fred_date":"n/a"
+  },
+  "risk":{
+    "fx_lvl":"LOW","fx_col":"#1A7A6B",
+    "fx_note":"EUR monetary union: no intra-zone FX risk. USD/EUR exposure driven by ECB vs. Fed policy divergence. Annualized EUR vol ≈ —.",
+    "ir_lvl":"LOW–MEDIUM","ir_col":"#C4901A",
+    "ir_note":"IG with moderate risk premium; spread sensitive to global risk sentiment.",
+    "hedge_note":"<strong>FX:</strong> Cross-Currency Basis Swap (EUR/USD) to convert USD parent funding into EUR debt service. IRS: pay fixed EUR / receive floating (EURIBOR). No intra-Eurozone FX hedge needed.<br/><strong>Rate:</strong> IRS + sovereign CDS as partial hedge. FRA 3 months before issuance. Watch risk-off windows."
+  },
+  "country_text":"Spain is a key market for Alphabet and its sector. As a Eurozone member, Spain shares ECB monetary policy, limiting bilateral FX risk within the zone. For Alphabet, this market represents material supply-chain, revenue, or regulatory exposure, making EUR dynamics and local interest rates directly relevant to its cost of capital when issuing debt in Spain.",
+  "charts":{
+    "stock":null,"financials":{"data": [{"type": "bar", "name": "Revenue", "x": [], "y": [], "marker": {"color": "#1A3A6B"}}, {"type": "bar", "name": "EBITDA", "x": [], "y": [], "marker": {"color": "#1A7A6B"}}, {"type": "bar", "name": "Net Income", "x": [], "y": [], "marker": {"color": "#C4901A"}}], "layout": {"title": {"text": "Annual Financials (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 50, "r": 20, "t": 40, "b": 50}}},
+    "bs":{"data": [{"type": "bar", "name": "Total Assets", "x": [], "y": [], "marker": {"color": "#1A3A6B"}, "opacity": 0.85}, {"type": "bar", "name": "Total Liabilities", "x": [], "y": [], "marker": {"color": "#C0392B"}, "opacity": 0.75}, {"type": "bar", "name": "Equity", "x": [], "y": [], "marker": {"color": "#1A7A6B"}, "opacity": 0.85}, {"type": "scatter", "name": "Total Debt", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#7D3C98", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Balance Sheet Evolution (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},"leverage":{"data": [{"type": "scatter", "name": "D/E Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C0392B", "width": 2}, "yaxis": "y"}, {"type": "scatter", "name": "Current Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}, "yaxis": "y2"}], "layout": {"title": {"text": "Leverage & Liquidity", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#C0392B", "title": {"text": "D/E", "font": {"color": "#C0392B"}}}, "yaxis2": {"overlaying": "y", "side": "right", "color": "#1A7A6B", "title": {"text": "Current Ratio", "font": {"color": "#1A7A6B"}}, "showgrid": false}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 60, "t": 40, "b": 50}}},"returns":{"data": [{"type": "scatter", "name": "ROE (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C4901A", "width": 2}}, {"type": "scatter", "name": "ROA (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A3A6B", "width": 2}}, {"type": "scatter", "name": "Net Margin (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Return & Margin Trends (%)", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "%"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},
+    "gdp":null,"cpi":null,"fx":null,"ca":null,
+    "rates":null,"spread":null,"geo":{"data": [{"type": "pie", "labels": ["United States", "Europe", "Asia Pacific", "Other Americas", "Middle East/Africa", "Rest of World"], "values": [47, 28, 15, 6, 2, 2], "hole": 0.44, "textinfo": "label+percent", "textposition": "outside", "hovertemplate": "<b>%{label}</b><br>%{value}% of revenue<extra></extra>", "marker": {"colors": ["#1A3A6B", "#1A7A6B", "#C4901A", "#2E6FAD", "#8B5E3C", "#AAAAAA"], "line": {"color": "white", "width": 2}}, "insidetextorientation": "horizontal"}], "layout": {"title": {"text": "Geographic Revenue Mix (approx.)", "font": {"size": 13, "color": "#1A3A6B"}}, "showlegend": false, "margin": {"l": 10, "r": 10, "t": 40, "b": 10}, "plot_bgcolor": "white", "paper_bgcolor": "white"}}
+  },
+  "peers":`<table class="peer-table"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th><th>P/E</th><th>P/B</th><th>Beta</th><th>Div Yld</th></tr></thead><tbody><tr class="main-row"><td><strong>GOOGL</strong></td><td>GOOGL</td><td>—</td><td>—x</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>`
+},
+"MCD":{
+  "cfg":{
+    "ticker":"MCD","name":"McDonald's","country":"France",
+    "ccy":"EUR","sov":"AA-","regime":"Euro (monetary union)",
+    "sector":"—","industry":"—",
+    "exchange":"—","grp":6,"grpLbl":"Group 6",
+    "firmType":"project"
+  },
+  "kpis":{
+    "price_s":"—","ytd_s":"—","ytd_cls":"down","ytd_sym":"▼",
+    "mc_s":"—","pe_s":"—",
+    "beta_s":"—","div_s":"—",
+    "rev_s":"—","ebitda_s":"—",
+    "net_s":"—","ndeb_s":"—",
+    "de_s":"—","cr_s":"—",
+    "em_s":"—","nm_s":"—",
+    "roa_s":"—","roe_s":"—",
+    "ic_s":"—","ta_s":"—",
+    "eq_s":"—",
+    "td_s":"—",
+    "ltd_s":"—",
+    "std_s":"—",
+    "lt_pct_s":"—",
+    "da_s":"—",
+    "biz":"",
+    "debt_text":"McDonald's carries total financial debt of undisclosed. Most existing debt is USD-denominated (standard for US-listed issuers). Issuing in EUR in France would ADD EUR-denominated obligations to the capital structure, creating a natural hedge for local-currency revenues while introducing FX translation risk on the principal for USD reporting.",
+    "fin_period":"n/a",
+    "bs_period":"n/a"
+  },
+  "macro":{
+    "gdp_s":"—","cpi_s":"—",
+    "ca_s":"— GDP","unemp_s":"—",
+    "fx_last":"—","fx_chg":"—","fx_lbl":"EUR/USD",
+    "pol_s":"—",
+    "yld_s":"—",
+    "term_s":"—",
+    "cds_s":"35–75 bps",
+    "stance":"Unknown","stance_col":"#888",
+    "stance_desc":"Insufficient rate data to determine stance.",
+    "wb_year":"n/a","fred_date":"n/a"
+  },
+  "risk":{
+    "fx_lvl":"LOW","fx_col":"#1A7A6B",
+    "fx_note":"EUR monetary union: no intra-zone FX risk. USD/EUR exposure driven by ECB vs. Fed policy divergence. Annualized EUR vol ≈ —.",
+    "ir_lvl":"LOW","ir_col":"#1A7A6B",
+    "ir_note":"Strong IG; low spreads; modest premium over core markets.",
+    "hedge_note":"<strong>FX:</strong> Cross-Currency Basis Swap (EUR/USD) to convert USD parent funding into EUR debt service. IRS: pay fixed EUR / receive floating (EURIBOR). No intra-Eurozone FX hedge needed.<br/><strong>Rate:</strong> IRS in local currency. FRA 3–6 months before pricing to lock rate. Reliable market access."
+  },
+  "country_text":"France is a key market for McDonald's and its sector. As a Eurozone member, France shares ECB monetary policy, limiting bilateral FX risk within the zone. For McDonald's, this market represents material supply-chain, revenue, or regulatory exposure, making EUR dynamics and local interest rates directly relevant to its cost of capital when issuing debt in France.",
+  "charts":{
+    "stock":null,"financials":{"data": [{"type": "bar", "name": "Revenue", "x": [], "y": [], "marker": {"color": "#1A3A6B"}}, {"type": "bar", "name": "EBITDA", "x": [], "y": [], "marker": {"color": "#1A7A6B"}}, {"type": "bar", "name": "Net Income", "x": [], "y": [], "marker": {"color": "#C4901A"}}], "layout": {"title": {"text": "Annual Financials (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 50, "r": 20, "t": 40, "b": 50}}},
+    "bs":{"data": [{"type": "bar", "name": "Total Assets", "x": [], "y": [], "marker": {"color": "#1A3A6B"}, "opacity": 0.85}, {"type": "bar", "name": "Total Liabilities", "x": [], "y": [], "marker": {"color": "#C0392B"}, "opacity": 0.75}, {"type": "bar", "name": "Equity", "x": [], "y": [], "marker": {"color": "#1A7A6B"}, "opacity": 0.85}, {"type": "scatter", "name": "Total Debt", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#7D3C98", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Balance Sheet Evolution (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},"leverage":{"data": [{"type": "scatter", "name": "D/E Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C0392B", "width": 2}, "yaxis": "y"}, {"type": "scatter", "name": "Current Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}, "yaxis": "y2"}], "layout": {"title": {"text": "Leverage & Liquidity", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#C0392B", "title": {"text": "D/E", "font": {"color": "#C0392B"}}}, "yaxis2": {"overlaying": "y", "side": "right", "color": "#1A7A6B", "title": {"text": "Current Ratio", "font": {"color": "#1A7A6B"}}, "showgrid": false}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 60, "t": 40, "b": 50}}},"returns":{"data": [{"type": "scatter", "name": "ROE (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C4901A", "width": 2}}, {"type": "scatter", "name": "ROA (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A3A6B", "width": 2}}, {"type": "scatter", "name": "Net Margin (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Return & Margin Trends (%)", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "%"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},
+    "gdp":null,"cpi":null,"fx":null,"ca":null,
+    "rates":null,"spread":null,"geo":{"data": [{"type": "pie", "labels": ["United States", "France", "Germany", "United Kingdom", "Canada", "Rest of World"], "values": [39, 7, 5, 5, 4, 40], "hole": 0.44, "textinfo": "label+percent", "textposition": "outside", "hovertemplate": "<b>%{label}</b><br>%{value}% of revenue<extra></extra>", "marker": {"colors": ["#1A3A6B", "#1A7A6B", "#C4901A", "#2E6FAD", "#8B5E3C", "#AAAAAA"], "line": {"color": "white", "width": 2}}, "insidetextorientation": "horizontal"}], "layout": {"title": {"text": "Geographic Revenue Mix (approx.)", "font": {"size": 13, "color": "#1A3A6B"}}, "showlegend": false, "margin": {"l": 10, "r": 10, "t": 40, "b": 10}, "plot_bgcolor": "white", "paper_bgcolor": "white"}}
+  },
+  "peers":`<table class="peer-table"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th><th>P/E</th><th>P/B</th><th>Beta</th><th>Div Yld</th></tr></thead><tbody><tr class="main-row"><td><strong>MCD</strong></td><td>MCD</td><td>—</td><td>—x</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>`
+},
+"AMZN":{
+  "cfg":{
+    "ticker":"AMZN","name":"Amazon","country":"Germany",
+    "ccy":"EUR","sov":"AAA","regime":"Euro (monetary union)",
+    "sector":"—","industry":"—",
+    "exchange":"—","grp":7,"grpLbl":"Group 7",
+    "firmType":"project"
+  },
+  "kpis":{
+    "price_s":"—","ytd_s":"—","ytd_cls":"down","ytd_sym":"▼",
+    "mc_s":"—","pe_s":"—",
+    "beta_s":"—","div_s":"—",
+    "rev_s":"—","ebitda_s":"—",
+    "net_s":"—","ndeb_s":"—",
+    "de_s":"—","cr_s":"—",
+    "em_s":"—","nm_s":"—",
+    "roa_s":"—","roe_s":"—",
+    "ic_s":"—","ta_s":"—",
+    "eq_s":"—",
+    "td_s":"—",
+    "ltd_s":"—",
+    "std_s":"—",
+    "lt_pct_s":"—",
+    "da_s":"—",
+    "biz":"",
+    "debt_text":"Amazon carries total financial debt of undisclosed. Most existing debt is USD-denominated (standard for US-listed issuers). Issuing in EUR in Germany would ADD EUR-denominated obligations to the capital structure, creating a natural hedge for local-currency revenues while introducing FX translation risk on the principal for USD reporting.",
+    "fin_period":"n/a",
+    "bs_period":"n/a"
+  },
+  "macro":{
+    "gdp_s":"—","cpi_s":"—",
+    "ca_s":"— GDP","unemp_s":"—",
+    "fx_last":"—","fx_chg":"—","fx_lbl":"EUR/USD",
+    "pol_s":"—",
+    "yld_s":"—",
+    "term_s":"—",
+    "cds_s":"5–20 bps",
+    "stance":"Unknown","stance_col":"#888",
+    "stance_desc":"Insufficient rate data to determine stance.",
+    "wb_year":"n/a","fred_date":"n/a"
+  },
+  "risk":{
+    "fx_lvl":"LOW","fx_col":"#1A7A6B",
+    "fx_note":"EUR monetary union: no intra-zone FX risk. USD/EUR exposure driven by ECB vs. Fed policy divergence. Annualized EUR vol ≈ —.",
+    "ir_lvl":"MINIMAL","ir_col":"#1A7A6B",
+    "ir_note":"Near-zero default risk; sub-10 bps spread over UST; broadest institutional investor base.",
+    "hedge_note":"<strong>FX:</strong> Cross-Currency Basis Swap (EUR/USD) to convert USD parent funding into EUR debt service. IRS: pay fixed EUR / receive floating (EURIBOR). No intra-Eurozone FX hedge needed.<br/><strong>Rate:</strong> IRS (pay fixed local / receive SOFR) at very tight spreads. Favorable all-in cost vs. USD bond."
+  },
+  "country_text":"Germany is a key market for Amazon and its sector. As a Eurozone member, Germany shares ECB monetary policy, limiting bilateral FX risk within the zone. For Amazon, this market represents material supply-chain, revenue, or regulatory exposure, making EUR dynamics and local interest rates directly relevant to its cost of capital when issuing debt in Germany.",
+  "charts":{
+    "stock":null,"financials":{"data": [{"type": "bar", "name": "Revenue", "x": [], "y": [], "marker": {"color": "#1A3A6B"}}, {"type": "bar", "name": "EBITDA", "x": [], "y": [], "marker": {"color": "#1A7A6B"}}, {"type": "bar", "name": "Net Income", "x": [], "y": [], "marker": {"color": "#C4901A"}}], "layout": {"title": {"text": "Annual Financials (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 50, "r": 20, "t": 40, "b": 50}}},
+    "bs":{"data": [{"type": "bar", "name": "Total Assets", "x": [], "y": [], "marker": {"color": "#1A3A6B"}, "opacity": 0.85}, {"type": "bar", "name": "Total Liabilities", "x": [], "y": [], "marker": {"color": "#C0392B"}, "opacity": 0.75}, {"type": "bar", "name": "Equity", "x": [], "y": [], "marker": {"color": "#1A7A6B"}, "opacity": 0.85}, {"type": "scatter", "name": "Total Debt", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#7D3C98", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Balance Sheet Evolution (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},"leverage":{"data": [{"type": "scatter", "name": "D/E Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C0392B", "width": 2}, "yaxis": "y"}, {"type": "scatter", "name": "Current Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}, "yaxis": "y2"}], "layout": {"title": {"text": "Leverage & Liquidity", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#C0392B", "title": {"text": "D/E", "font": {"color": "#C0392B"}}}, "yaxis2": {"overlaying": "y", "side": "right", "color": "#1A7A6B", "title": {"text": "Current Ratio", "font": {"color": "#1A7A6B"}}, "showgrid": false}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 60, "t": 40, "b": 50}}},"returns":{"data": [{"type": "scatter", "name": "ROE (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C4901A", "width": 2}}, {"type": "scatter", "name": "ROA (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A3A6B", "width": 2}}, {"type": "scatter", "name": "Net Margin (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Return & Margin Trends (%)", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "%"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},
+    "gdp":null,"cpi":null,"fx":null,"ca":null,
+    "rates":null,"spread":null,"geo":{"data": [{"type": "pie", "labels": ["United States", "Germany", "United Kingdom", "Japan", "Rest of World"], "values": [69, 8, 8, 5, 10], "hole": 0.44, "textinfo": "label+percent", "textposition": "outside", "hovertemplate": "<b>%{label}</b><br>%{value}% of revenue<extra></extra>", "marker": {"colors": ["#1A3A6B", "#1A7A6B", "#C4901A", "#2E6FAD", "#8B5E3C"], "line": {"color": "white", "width": 2}}, "insidetextorientation": "horizontal"}], "layout": {"title": {"text": "Geographic Revenue Mix (approx.)", "font": {"size": 13, "color": "#1A3A6B"}}, "showlegend": false, "margin": {"l": 10, "r": 10, "t": 40, "b": 10}, "plot_bgcolor": "white", "paper_bgcolor": "white"}}
+  },
+  "peers":`<table class="peer-table"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th><th>P/E</th><th>P/B</th><th>Beta</th><th>Div Yld</th></tr></thead><tbody><tr class="main-row"><td><strong>AMZN</strong></td><td>AMZN</td><td>—</td><td>—x</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>`
+},
+"NKE":{
+  "cfg":{
+    "ticker":"NKE","name":"Nike","country":"Japan",
+    "ccy":"JPY","sov":"A+","regime":"Managed float",
+    "sector":"—","industry":"—",
+    "exchange":"—","grp":8,"grpLbl":"Group 8",
+    "firmType":"project"
+  },
+  "kpis":{
+    "price_s":"—","ytd_s":"—","ytd_cls":"down","ytd_sym":"▼",
+    "mc_s":"—","pe_s":"—",
+    "beta_s":"—","div_s":"—",
+    "rev_s":"—","ebitda_s":"—",
+    "net_s":"—","ndeb_s":"—",
+    "de_s":"—","cr_s":"—",
+    "em_s":"—","nm_s":"—",
+    "roa_s":"—","roe_s":"—",
+    "ic_s":"—","ta_s":"—",
+    "eq_s":"—",
+    "td_s":"—",
+    "ltd_s":"—",
+    "std_s":"—",
+    "lt_pct_s":"—",
+    "da_s":"—",
+    "biz":"",
+    "debt_text":"Nike carries total financial debt of undisclosed. Most existing debt is USD-denominated (standard for US-listed issuers). Issuing in JPY in Japan would ADD JPY-denominated obligations to the capital structure, creating a natural hedge for local-currency revenues while introducing FX translation risk on the principal for USD reporting.",
+    "fin_period":"n/a",
+    "bs_period":"n/a"
+  },
+  "macro":{
+    "gdp_s":"—","cpi_s":"—",
+    "ca_s":"— GDP","unemp_s":"—",
+    "fx_last":"—","fx_chg":"—","fx_lbl":"USD/JPY",
+    "pol_s":"—",
+    "yld_s":"—",
+    "term_s":"—",
+    "cds_s":"55–115 bps",
+    "stance":"Unknown","stance_col":"#888",
+    "stance_desc":"Insufficient rate data to determine stance.",
+    "wb_year":"n/a","fred_date":"n/a"
+  },
+  "risk":{
+    "fx_lvl":"MEDIUM","fx_col":"#C4901A",
+    "fx_note":"Managed float: central bank dampens volatility, but JPY trend can shift abruptly on policy changes. Annualized FX vol ≈ —.",
+    "ir_lvl":"LOW","ir_col":"#1A7A6B",
+    "ir_note":"Solid IG; moderate spread (~50–100 bps); generally reliable market access.",
+    "hedge_note":"<strong>FX:</strong> Cross-Currency Swap (CCS): pay fixed JPY / receive fixed USD. FX Forwards (per coupon date) to lock USD cost of local coupons. FRA to lock local floating rate before bond pricing date.<br/><strong>Rate:</strong> IRS + FRA before pricing. Consider benchmark USD Eurobond + CCS if local market is thin."
+  },
+  "country_text":"Japan is a key market for Nike and its sector. The central bank actively manages the JPY, smoothing volatility but introducing policy uncertainty for FX forecasts. For Nike, this market represents material supply-chain, revenue, or regulatory exposure, making JPY dynamics and local interest rates directly relevant to its cost of capital when issuing debt in Japan.",
+  "charts":{
+    "stock":null,"financials":{"data": [{"type": "bar", "name": "Revenue", "x": [], "y": [], "marker": {"color": "#1A3A6B"}}, {"type": "bar", "name": "EBITDA", "x": [], "y": [], "marker": {"color": "#1A7A6B"}}, {"type": "bar", "name": "Net Income", "x": [], "y": [], "marker": {"color": "#C4901A"}}], "layout": {"title": {"text": "Annual Financials (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 50, "r": 20, "t": 40, "b": 50}}},
+    "bs":{"data": [{"type": "bar", "name": "Total Assets", "x": [], "y": [], "marker": {"color": "#1A3A6B"}, "opacity": 0.85}, {"type": "bar", "name": "Total Liabilities", "x": [], "y": [], "marker": {"color": "#C0392B"}, "opacity": 0.75}, {"type": "bar", "name": "Equity", "x": [], "y": [], "marker": {"color": "#1A7A6B"}, "opacity": 0.85}, {"type": "scatter", "name": "Total Debt", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#7D3C98", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Balance Sheet Evolution (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},"leverage":{"data": [{"type": "scatter", "name": "D/E Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C0392B", "width": 2}, "yaxis": "y"}, {"type": "scatter", "name": "Current Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}, "yaxis": "y2"}], "layout": {"title": {"text": "Leverage & Liquidity", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#C0392B", "title": {"text": "D/E", "font": {"color": "#C0392B"}}}, "yaxis2": {"overlaying": "y", "side": "right", "color": "#1A7A6B", "title": {"text": "Current Ratio", "font": {"color": "#1A7A6B"}}, "showgrid": false}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 60, "t": 40, "b": 50}}},"returns":{"data": [{"type": "scatter", "name": "ROE (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C4901A", "width": 2}}, {"type": "scatter", "name": "ROA (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A3A6B", "width": 2}}, {"type": "scatter", "name": "Net Margin (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Return & Margin Trends (%)", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "%"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},
+    "gdp":null,"cpi":null,"fx":null,"ca":null,
+    "rates":null,"spread":null,"geo":{"data": [{"type": "pie", "labels": ["North America", "Europe/ME/Africa", "Greater China", "Asia Pacific/LatAm", "Rest of World"], "values": [43, 28, 14, 9, 6], "hole": 0.44, "textinfo": "label+percent", "textposition": "outside", "hovertemplate": "<b>%{label}</b><br>%{value}% of revenue<extra></extra>", "marker": {"colors": ["#1A3A6B", "#1A7A6B", "#C4901A", "#2E6FAD", "#8B5E3C"], "line": {"color": "white", "width": 2}}, "insidetextorientation": "horizontal"}], "layout": {"title": {"text": "Geographic Revenue Mix (approx.)", "font": {"size": 13, "color": "#1A3A6B"}}, "showlegend": false, "margin": {"l": 10, "r": 10, "t": 40, "b": 10}, "plot_bgcolor": "white", "paper_bgcolor": "white"}}
+  },
+  "peers":`<table class="peer-table"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th><th>P/E</th><th>P/B</th><th>Beta</th><th>Div Yld</th></tr></thead><tbody><tr class="main-row"><td><strong>NKE</strong></td><td>NKE</td><td>—</td><td>—x</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>`
+},
+"HAL":{
+  "cfg":{
+    "ticker":"HAL","name":"Halliburton","country":"Kuwait",
+    "ccy":"KWD","sov":"A+","regime":"Pegged to USD basket",
+    "sector":"—","industry":"—",
+    "exchange":"—","grp":9,"grpLbl":"Group 9",
+    "firmType":"project"
+  },
+  "kpis":{
+    "price_s":"—","ytd_s":"—","ytd_cls":"down","ytd_sym":"▼",
+    "mc_s":"—","pe_s":"—",
+    "beta_s":"—","div_s":"—",
+    "rev_s":"—","ebitda_s":"—",
+    "net_s":"—","ndeb_s":"—",
+    "de_s":"—","cr_s":"—",
+    "em_s":"—","nm_s":"—",
+    "roa_s":"—","roe_s":"—",
+    "ic_s":"—","ta_s":"—",
+    "eq_s":"—",
+    "td_s":"—",
+    "ltd_s":"—",
+    "std_s":"—",
+    "lt_pct_s":"—",
+    "da_s":"—",
+    "biz":"",
+    "debt_text":"Halliburton carries total financial debt of undisclosed. Most existing debt is USD-denominated (standard for US-listed issuers). Issuing in KWD in Kuwait would ADD KWD-denominated obligations to the capital structure, creating a natural hedge for local-currency revenues while introducing FX translation risk on the principal for USD reporting.",
+    "fin_period":"n/a",
+    "bs_period":"n/a"
+  },
+  "macro":{
+    "gdp_s":"—","cpi_s":"—",
+    "ca_s":"— GDP","unemp_s":"—",
+    "fx_last":"—","fx_chg":"—","fx_lbl":"USD/KWD",
+    "pol_s":"—",
+    "yld_s":"—",
+    "term_s":"—",
+    "cds_s":"55–115 bps",
+    "stance":"Unknown","stance_col":"#888",
+    "stance_desc":"Insufficient rate data to determine stance.",
+    "wb_year":"n/a","fred_date":"n/a"
+  },
+  "risk":{
+    "fx_lvl":"LOW–MEDIUM","fx_col":"#C4901A",
+    "fx_note":"Fixed/pegged KWD: minimal day-to-day volatility, but structural imbalances can accumulate and trigger sudden devaluations — a tail risk for local-currency bond issuers.",
+    "ir_lvl":"LOW","ir_col":"#1A7A6B",
+    "ir_note":"Solid IG; moderate spread (~50–100 bps); generally reliable market access.",
+    "hedge_note":"<strong>FX:</strong> FX Forwards on each coupon date (peg keeps cost low). Cross-Currency Swap (CCS) recommended if tenor > 2yr to hedge devaluation tail risk. Monitor FX reserve levels as early-warning indicator.<br/><strong>Rate:</strong> IRS + FRA before pricing. Consider benchmark USD Eurobond + CCS if local market is thin."
+  },
+  "country_text":"Kuwait is a key market for Halliburton and its sector. The KWD is pegged — low daily FX volatility but devaluation tail risk if reserves are depleted. For Halliburton, this market represents material supply-chain, revenue, or regulatory exposure, making KWD dynamics and local interest rates directly relevant to its cost of capital when issuing debt in Kuwait.",
+  "charts":{
+    "stock":null,"financials":{"data": [{"type": "bar", "name": "Revenue", "x": [], "y": [], "marker": {"color": "#1A3A6B"}}, {"type": "bar", "name": "EBITDA", "x": [], "y": [], "marker": {"color": "#1A7A6B"}}, {"type": "bar", "name": "Net Income", "x": [], "y": [], "marker": {"color": "#C4901A"}}], "layout": {"title": {"text": "Annual Financials (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 50, "r": 20, "t": 40, "b": 50}}},
+    "bs":{"data": [{"type": "bar", "name": "Total Assets", "x": [], "y": [], "marker": {"color": "#1A3A6B"}, "opacity": 0.85}, {"type": "bar", "name": "Total Liabilities", "x": [], "y": [], "marker": {"color": "#C0392B"}, "opacity": 0.75}, {"type": "bar", "name": "Equity", "x": [], "y": [], "marker": {"color": "#1A7A6B"}, "opacity": 0.85}, {"type": "scatter", "name": "Total Debt", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#7D3C98", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Balance Sheet Evolution (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},"leverage":{"data": [{"type": "scatter", "name": "D/E Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C0392B", "width": 2}, "yaxis": "y"}, {"type": "scatter", "name": "Current Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}, "yaxis": "y2"}], "layout": {"title": {"text": "Leverage & Liquidity", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#C0392B", "title": {"text": "D/E", "font": {"color": "#C0392B"}}}, "yaxis2": {"overlaying": "y", "side": "right", "color": "#1A7A6B", "title": {"text": "Current Ratio", "font": {"color": "#1A7A6B"}}, "showgrid": false}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 60, "t": 40, "b": 50}}},"returns":{"data": [{"type": "scatter", "name": "ROE (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C4901A", "width": 2}}, {"type": "scatter", "name": "ROA (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A3A6B", "width": 2}}, {"type": "scatter", "name": "Net Margin (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Return & Margin Trends (%)", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "%"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},
+    "gdp":null,"cpi":null,"fx":null,"ca":null,
+    "rates":null,"spread":null,"geo":{"data": [{"type": "pie", "labels": ["North America", "Middle East/Asia", "Europe/SSA/CIS", "Latin America"], "values": [40, 28, 22, 10], "hole": 0.44, "textinfo": "label+percent", "textposition": "outside", "hovertemplate": "<b>%{label}</b><br>%{value}% of revenue<extra></extra>", "marker": {"colors": ["#1A3A6B", "#1A7A6B", "#C4901A", "#2E6FAD"], "line": {"color": "white", "width": 2}}, "insidetextorientation": "horizontal"}], "layout": {"title": {"text": "Geographic Revenue Mix (approx.)", "font": {"size": 13, "color": "#1A3A6B"}}, "showlegend": false, "margin": {"l": 10, "r": 10, "t": 40, "b": 10}, "plot_bgcolor": "white", "paper_bgcolor": "white"}}
+  },
+  "peers":`<table class="peer-table"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th><th>P/E</th><th>P/B</th><th>Beta</th><th>Div Yld</th></tr></thead><tbody><tr class="main-row"><td><strong>HAL</strong></td><td>HAL</td><td>—</td><td>—x</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>`
+},
+"AAPL":{
+  "cfg":{
+    "ticker":"AAPL","name":"Apple","country":"China",
+    "ccy":"CNY","sov":"A+","regime":"Managed float (crawling peg)",
+    "sector":"—","industry":"—",
+    "exchange":"—","grp":10,"grpLbl":"Group 10",
+    "firmType":"project"
+  },
+  "kpis":{
+    "price_s":"—","ytd_s":"—","ytd_cls":"down","ytd_sym":"▼",
+    "mc_s":"—","pe_s":"—",
+    "beta_s":"—","div_s":"—",
+    "rev_s":"—","ebitda_s":"—",
+    "net_s":"—","ndeb_s":"—",
+    "de_s":"—","cr_s":"—",
+    "em_s":"—","nm_s":"—",
+    "roa_s":"—","roe_s":"—",
+    "ic_s":"—","ta_s":"—",
+    "eq_s":"—",
+    "td_s":"—",
+    "ltd_s":"—",
+    "std_s":"—",
+    "lt_pct_s":"—",
+    "da_s":"—",
+    "biz":"",
+    "debt_text":"Apple carries total financial debt of undisclosed. Most existing debt is USD-denominated (standard for US-listed issuers). Issuing in CNY in China would ADD CNY-denominated obligations to the capital structure, creating a natural hedge for local-currency revenues while introducing FX translation risk on the principal for USD reporting.",
+    "fin_period":"n/a",
+    "bs_period":"n/a"
+  },
+  "macro":{
+    "gdp_s":"—","cpi_s":"—",
+    "ca_s":"— GDP","unemp_s":"—",
+    "fx_last":"—","fx_chg":"—","fx_lbl":"USD/CNY",
+    "pol_s":"—",
+    "yld_s":"—",
+    "term_s":"—",
+    "cds_s":"55–115 bps",
+    "stance":"Unknown","stance_col":"#888",
+    "stance_desc":"Insufficient rate data to determine stance.",
+    "wb_year":"n/a","fred_date":"n/a"
+  },
+  "risk":{
+    "fx_lvl":"LOW–MEDIUM","fx_col":"#C4901A",
+    "fx_note":"Fixed/pegged CNY: minimal day-to-day volatility, but structural imbalances can accumulate and trigger sudden devaluations — a tail risk for local-currency bond issuers.",
+    "ir_lvl":"LOW","ir_col":"#1A7A6B",
+    "ir_note":"Solid IG; moderate spread (~50–100 bps); generally reliable market access.",
+    "hedge_note":"<strong>FX:</strong> FX Forwards on each coupon date (peg keeps cost low). Cross-Currency Swap (CCS) recommended if tenor > 2yr to hedge devaluation tail risk. Monitor FX reserve levels as early-warning indicator.<br/><strong>Rate:</strong> IRS + FRA before pricing. Consider benchmark USD Eurobond + CCS if local market is thin."
+  },
+  "country_text":"China is a key market for Apple and its sector. The CNY is pegged — low daily FX volatility but devaluation tail risk if reserves are depleted. For Apple, this market represents material supply-chain, revenue, or regulatory exposure, making CNY dynamics and local interest rates directly relevant to its cost of capital when issuing debt in China.",
+  "charts":{
+    "stock":null,"financials":{"data": [{"type": "bar", "name": "Revenue", "x": [], "y": [], "marker": {"color": "#1A3A6B"}}, {"type": "bar", "name": "EBITDA", "x": [], "y": [], "marker": {"color": "#1A7A6B"}}, {"type": "bar", "name": "Net Income", "x": [], "y": [], "marker": {"color": "#C4901A"}}], "layout": {"title": {"text": "Annual Financials (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 50, "r": 20, "t": 40, "b": 50}}},
+    "bs":{"data": [{"type": "bar", "name": "Total Assets", "x": [], "y": [], "marker": {"color": "#1A3A6B"}, "opacity": 0.85}, {"type": "bar", "name": "Total Liabilities", "x": [], "y": [], "marker": {"color": "#C0392B"}, "opacity": 0.75}, {"type": "bar", "name": "Equity", "x": [], "y": [], "marker": {"color": "#1A7A6B"}, "opacity": 0.85}, {"type": "scatter", "name": "Total Debt", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#7D3C98", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Balance Sheet Evolution (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},"leverage":{"data": [{"type": "scatter", "name": "D/E Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C0392B", "width": 2}, "yaxis": "y"}, {"type": "scatter", "name": "Current Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}, "yaxis": "y2"}], "layout": {"title": {"text": "Leverage & Liquidity", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#C0392B", "title": {"text": "D/E", "font": {"color": "#C0392B"}}}, "yaxis2": {"overlaying": "y", "side": "right", "color": "#1A7A6B", "title": {"text": "Current Ratio", "font": {"color": "#1A7A6B"}}, "showgrid": false}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 60, "t": 40, "b": 50}}},"returns":{"data": [{"type": "scatter", "name": "ROE (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C4901A", "width": 2}}, {"type": "scatter", "name": "ROA (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A3A6B", "width": 2}}, {"type": "scatter", "name": "Net Margin (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Return & Margin Trends (%)", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "%"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},
+    "gdp":null,"cpi":null,"fx":null,"ca":null,
+    "rates":null,"spread":null,"geo":{"data": [{"type": "pie", "labels": ["Americas", "Europe", "Greater China", "Rest of Asia Pacific", "Japan", "Rest of World"], "values": [42, 24, 17, 10, 6, 1], "hole": 0.44, "textinfo": "label+percent", "textposition": "outside", "hovertemplate": "<b>%{label}</b><br>%{value}% of revenue<extra></extra>", "marker": {"colors": ["#1A3A6B", "#1A7A6B", "#C4901A", "#2E6FAD", "#8B5E3C", "#AAAAAA"], "line": {"color": "white", "width": 2}}, "insidetextorientation": "horizontal"}], "layout": {"title": {"text": "Geographic Revenue Mix (approx.)", "font": {"size": 13, "color": "#1A3A6B"}}, "showlegend": false, "margin": {"l": 10, "r": 10, "t": 40, "b": 10}, "plot_bgcolor": "white", "paper_bgcolor": "white"}}
+  },
+  "peers":`<table class="peer-table"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th><th>P/E</th><th>P/B</th><th>Beta</th><th>Div Yld</th></tr></thead><tbody><tr class="main-row"><td><strong>AAPL</strong></td><td>AAPL</td><td>—</td><td>—x</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>`
+},
+"SBUX":{
+  "cfg":{
+    "ticker":"SBUX","name":"Starbucks","country":"Canada",
+    "ccy":"CAD","sov":"AAA","regime":"Floating",
+    "sector":"—","industry":"—",
+    "exchange":"—","grp":11,"grpLbl":"Group 11",
+    "firmType":"project"
+  },
+  "kpis":{
+    "price_s":"—","ytd_s":"—","ytd_cls":"down","ytd_sym":"▼",
+    "mc_s":"—","pe_s":"—",
+    "beta_s":"—","div_s":"—",
+    "rev_s":"—","ebitda_s":"—",
+    "net_s":"—","ndeb_s":"—",
+    "de_s":"—","cr_s":"—",
+    "em_s":"—","nm_s":"—",
+    "roa_s":"—","roe_s":"—",
+    "ic_s":"—","ta_s":"—",
+    "eq_s":"—",
+    "td_s":"—",
+    "ltd_s":"—",
+    "std_s":"—",
+    "lt_pct_s":"—",
+    "da_s":"—",
+    "biz":"",
+    "debt_text":"Starbucks carries total financial debt of undisclosed. Most existing debt is USD-denominated (standard for US-listed issuers). Issuing in CAD in Canada would ADD CAD-denominated obligations to the capital structure, creating a natural hedge for local-currency revenues while introducing FX translation risk on the principal for USD reporting.",
+    "fin_period":"n/a",
+    "bs_period":"n/a"
+  },
+  "macro":{
+    "gdp_s":"—","cpi_s":"—",
+    "ca_s":"— GDP","unemp_s":"—",
+    "fx_last":"—","fx_chg":"—","fx_lbl":"USD/CAD",
+    "pol_s":"—",
+    "yld_s":"—",
+    "term_s":"—",
+    "cds_s":"5–20 bps",
+    "stance":"Unknown","stance_col":"#888",
+    "stance_desc":"Insufficient rate data to determine stance.",
+    "wb_year":"n/a","fred_date":"n/a"
+  },
+  "risk":{
+    "fx_lvl":"MEDIUM–HIGH","fx_col":"#C0392B",
+    "fx_note":"Free float: CAD driven by market forces. Annualized FX vol ≈ —. USD-reporting issuers face meaningful translation and transaction risk on coupons and principal.",
+    "ir_lvl":"MINIMAL","ir_col":"#1A7A6B",
+    "ir_note":"Near-zero default risk; sub-10 bps spread over UST; broadest institutional investor base.",
+    "hedge_note":"<strong>FX:</strong> Full CCS essential: pay fixed CAD / receive fixed USD — locks both FX rate and rate differential. Rolling FX Forwards for each coupon payment date. FRA to lock local rate before issuance. FX Option collar for tail protection on principal.<br/><strong>Rate:</strong> IRS (pay fixed local / receive SOFR) at very tight spreads. Favorable all-in cost vs. USD bond."
+  },
+  "country_text":"Canada is a key market for Starbucks and its sector. The freely floating CAD absorbs external shocks but exposes USD-reporting issuers to meaningful FX translation risk. For Starbucks, this market represents material supply-chain, revenue, or regulatory exposure, making CAD dynamics and local interest rates directly relevant to its cost of capital when issuing debt in Canada.",
+  "charts":{
+    "stock":null,"financials":{"data": [{"type": "bar", "name": "Revenue", "x": [], "y": [], "marker": {"color": "#1A3A6B"}}, {"type": "bar", "name": "EBITDA", "x": [], "y": [], "marker": {"color": "#1A7A6B"}}, {"type": "bar", "name": "Net Income", "x": [], "y": [], "marker": {"color": "#C4901A"}}], "layout": {"title": {"text": "Annual Financials (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 50, "r": 20, "t": 40, "b": 50}}},
+    "bs":{"data": [{"type": "bar", "name": "Total Assets", "x": [], "y": [], "marker": {"color": "#1A3A6B"}, "opacity": 0.85}, {"type": "bar", "name": "Total Liabilities", "x": [], "y": [], "marker": {"color": "#C0392B"}, "opacity": 0.75}, {"type": "bar", "name": "Equity", "x": [], "y": [], "marker": {"color": "#1A7A6B"}, "opacity": 0.85}, {"type": "scatter", "name": "Total Debt", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#7D3C98", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Balance Sheet Evolution (USD bn)", "font": {"size": 13, "color": "#1A3A6B"}}, "barmode": "group", "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "B"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},"leverage":{"data": [{"type": "scatter", "name": "D/E Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C0392B", "width": 2}, "yaxis": "y"}, {"type": "scatter", "name": "Current Ratio", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}, "yaxis": "y2"}], "layout": {"title": {"text": "Leverage & Liquidity", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#C0392B", "title": {"text": "D/E", "font": {"color": "#C0392B"}}}, "yaxis2": {"overlaying": "y", "side": "right", "color": "#1A7A6B", "title": {"text": "Current Ratio", "font": {"color": "#1A7A6B"}}, "showgrid": false}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 60, "t": 40, "b": 50}}},"returns":{"data": [{"type": "scatter", "name": "ROE (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#C4901A", "width": 2}}, {"type": "scatter", "name": "ROA (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A3A6B", "width": 2}}, {"type": "scatter", "name": "Net Margin (%)", "x": [], "y": [], "mode": "lines+markers", "line": {"color": "#1A7A6B", "width": 2, "dash": "dot"}}], "layout": {"title": {"text": "Return & Margin Trends (%)", "font": {"size": 13, "color": "#1A3A6B"}}, "xaxis": {"showgrid": false, "color": "#888"}, "yaxis": {"gridcolor": "#eee", "color": "#888", "ticksuffix": "%"}, "legend": {"orientation": "h", "y": -0.22}, "plot_bgcolor": "white", "paper_bgcolor": "white", "margin": {"l": 55, "r": 20, "t": 40, "b": 50}}},
+    "gdp":null,"cpi":null,"fx":null,"ca":null,
+    "rates":null,"spread":null,"geo":{"data": [{"type": "pie", "labels": ["United States", "China", "Japan", "Canada", "Rest of World"], "values": [65, 9, 4, 3, 19], "hole": 0.44, "textinfo": "label+percent", "textposition": "outside", "hovertemplate": "<b>%{label}</b><br>%{value}% of revenue<extra></extra>", "marker": {"colors": ["#1A3A6B", "#1A7A6B", "#C4901A", "#2E6FAD", "#8B5E3C"], "line": {"color": "white", "width": 2}}, "insidetextorientation": "horizontal"}], "layout": {"title": {"text": "Geographic Revenue Mix (approx.)", "font": {"size": 13, "color": "#1A3A6B"}}, "showlegend": false, "margin": {"l": 10, "r": 10, "t": 40, "b": 10}, "plot_bgcolor": "white", "paper_bgcolor": "white"}}
+  },
+  "peers":`<table class="peer-table"><thead><tr><th>Ticker</th><th>Company</th><th>Mkt Cap</th><th>P/E</th><th>P/B</th><th>Beta</th><th>Div Yld</th></tr></thead><tbody><tr class="main-row"><td><strong>SBUX</strong></td><td>SBUX</td><td>—</td><td>—x</td><td>—</td><td>—</td><td>—</td></tr></tbody></table>`
+}};
+const PLT_CFG  = {responsive:true,displayModeBar:false};
+let CURRENT = "MSFT";
+
+// Password (SHA-256 via Web Crypto)
+async function sha256(str){
+  const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+function getPw(){try{return localStorage.getItem("fina405_pw");}catch{return null;}}
+function savePw(h){try{localStorage.setItem("fina405_pw",h);}catch{}}
+
+// Panel
+function togglePanel(){
+  document.getElementById("inst-overlay").classList.contains("open")?closePanel():openPanel();
+}
+function openPanel(){
+  document.getElementById("inst-overlay").classList.add("open");
+  getPw()?showAuth():showSetPw();
+}
+function closePanel(){
+  document.getElementById("inst-overlay").classList.remove("open");
+  document.getElementById("pw-input").value="";
+  document.getElementById("pw-error").style.display="none";
+}
+function closeIfOutside(e){if(e.target===document.getElementById("inst-overlay"))closePanel();}
+function showAuth(){
+  document.getElementById("auth-section").style.display="block";
+  document.getElementById("set-pw-section").style.display="none";
+  document.getElementById("inst-content").style.display="none";
+  document.getElementById("inst-content").classList.remove("unlocked");
+}
+function showSetPw(){
+  document.getElementById("auth-section").style.display="none";
+  document.getElementById("set-pw-section").style.display="block";
+  document.getElementById("inst-content").style.display="none";
+}
+function unlockContent(){
+  document.getElementById("auth-section").style.display="none";
+  document.getElementById("set-pw-section").style.display="none";
+  document.getElementById("inst-content").style.display="block";
+  document.getElementById("inst-content").classList.add("unlocked");
+  highlightCurrent();
+}
+async function verifyPw(){
+  const h=await sha256(document.getElementById("pw-input").value);
+  if(h===getPw()){unlockContent();}
+  else{document.getElementById("pw-error").style.display="block";}
+}
+async function setPw(){
+  const p1=document.getElementById("pw-new1").value,p2=document.getElementById("pw-new2").value;
+  const er=document.getElementById("pw-set-err");
+  if(!p1||p1.length<4){er.style.display="block";er.textContent="Min 4 characters.";return;}
+  if(p1!==p2){er.style.display="block";er.textContent="Passwords don't match.";return;}
+  er.style.display="none";
+  savePw(await sha256(p1));
+  unlockContent();
+}
+function lockPanel(){closePanel();showAuth();}
+
+// DOM helpers
+function setT(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function setH(id,v){const e=document.getElementById(id);if(e)e.innerHTML=v;}
+
+function renderChart(id,fig){
+  if(!fig)return;
+  try{
+    const dark=document.documentElement.getAttribute("data-theme")==="dark"||
+      (!document.documentElement.getAttribute("data-theme")&&window.matchMedia("(prefers-color-scheme:dark)").matches);
+    const bg=dark?"#1F2937":"white",tc=dark?"#94A3B8":"#888";
+    const l=fig.layout;
+    l.plot_bgcolor=bg;l.paper_bgcolor=bg;
+    if(l.xaxis)l.xaxis.color=tc;
+    if(l.yaxis)l.yaxis.color=tc;
+    if(l.yaxis2)l.yaxis2.color=tc;
+    Plotly.react(id,fig.data,l,PLT_CFG);
+  }catch(e){console.warn(id,e);}
+}
+
+function highlightCurrent(){
+  document.querySelectorAll(".firm-btn").forEach(b=>b.classList.remove("active"));
+  const b=document.getElementById("btn-"+CURRENT);if(b)b.classList.add("active");
+}
+
+function switchFirm(ticker){
+  if(!ALL_DATA[ticker]){alert("Not loaded. Re-run Python with --tickers "+ticker);return;}
+  CURRENT=ticker;
+  const d=ALL_DATA[ticker],k=d.kpis,m=d.macro,c=d.cfg,r=d.risk;
+
+  // Hero title
+  setH("hd-title",`<span>${c.ticker}</span> — ${c.name}`);
+  setT("hd-sub",`${c.sector} · ${c.industry} · ${c.exchange} · ${c.country}`);
+
+  // Company KPIs (left block)
+  setH("hd-kpis-firm",`
+    <div class="kpi-hero"><span class="label">Last Price</span><span class="value">${k.price_s}</span></div>
+    <div class="kpi-hero"><span class="label">YTD Return</span><span class="value ${k.ytd_cls}">${k.ytd_sym} ${k.ytd_s}</span></div>
+    <div class="kpi-hero"><span class="label">Market Cap</span><span class="value">${k.mc_s}</span></div>
+    <div class="kpi-hero"><span class="label">P/E (TTM)</span><span class="value">${k.pe_s}</span></div>
+    <div class="kpi-hero"><span class="label">Beta</span><span class="value">${k.beta_s}</span></div>
+    <div class="kpi-hero"><span class="label">Revenue (LTM)</span><span class="value">${k.rev_s}</span></div>
+    <div class="kpi-hero"><span class="label">Net Margin</span><span class="value">${k.nm_s}</span></div>
+    <div class="kpi-hero"><span class="label">D/E Ratio</span><span class="value">${k.de_s}</span></div>
+  `);
+
+  // Country KPIs (right block)
+  setH("hd-kpis-country",`
+    <div class="kpi-hero"><span class="label">GDP Growth</span><span class="value">${m.gdp_s}</span></div>
+    <div class="kpi-hero"><span class="label">CPI Inflation</span><span class="value">${m.cpi_s}</span></div>
+    <div class="kpi-hero"><span class="label">${m.fx_lbl}</span><span class="value">${m.fx_last}</span></div>
+    <div class="kpi-hero"><span class="label">FX Change (2yr)</span><span class="value">${m.fx_chg}</span></div>
+    <div class="kpi-hero"><span class="label">Sovereign Rating</span><span class="value">${c.sov}</span></div>
+    <div class="kpi-hero"><span class="label">FX Regime</span><span class="value" style="font-size:.85rem">${c.regime}</span></div>
+  `);
+
+  // Risk banner — 3 columns
+  setH("risk-banner",`
+    <div class="risk-cell">
+      <div class="risk-label">⚡ FX Risk — Issuing in ${c.country}</div>
+      <div class="risk-level" style="color:${r.fx_col}">${r.fx_lvl}</div>
+      <div class="risk-note">${r.fx_note}</div>
+    </div>
+    <div class="risk-cell">
+      <div class="risk-label">📈 Interest Rate / Sovereign Risk (${c.sov})</div>
+      <div class="risk-level" style="color:${r.ir_col}">${r.ir_lvl}</div>
+      <div class="risk-note">${r.ir_note}</div>
+    </div>
+    <div class="risk-cell">
+      <div class="risk-label">🔧 Hedging Instruments — Local Currency Debt</div>
+      <div class="risk-hedge">${r.hedge_note}</div>
+    </div>
+  `);
+
+  // S0 — Business overview
+  setT("s0-title","Business Overview — "+c.name);
+  setT("biz-text", k.biz||"Description not available.");
+  setT("k-ta",k.ta_s); setT("k-eq",k.eq_s);
+  setT("k-de",k.de_s); setT("k-ic",k.ic_s);
+  setT("k-cr",k.cr_s); setT("k-nd",k.ndeb_s);
+  // Debt structure
+  setT("k-td",   k.td_s||"—");
+  setT("k-ltd",  k.ltd_s||"—");
+  setT("k-std",  k.std_s||"—");
+  setT("k-lt-pct", k.lt_pct_s||"—");
+  setT("k-da",   k.da_s||"—");
+  setT("debt-analysis-text", k.debt_text||"Debt detail not available.");
+  renderChart("ch-bs",      d.charts.bs);
+  renderChart("ch-leverage",d.charts.leverage);
+  renderChart("ch-geo",     d.charts.geo);
+  // Balance-sheet footnote
+  setT("fn-bs", "Balance sheet: as of " + k.bs_period + " · Income stmt: FY ended " + k.fin_period
+       + " · Source: Yahoo Finance · Geographic mix: approx. from most recent annual report/10-K");
+
+  // S1 — Company analysis
+  setT("s1-title","Company Analysis — "+c.name+" ("+c.ticker+")");
+  setT("k-rev",k.rev_s);    setT("k-ebitda",k.ebitda_s);
+  setT("k-net",k.net_s);    setT("k-mc",k.mc_s);
+  setT("k-em",k.em_s);      setT("k-nm",k.nm_s);
+  setT("k-roe",k.roe_s);    setT("k-roa",k.roa_s);
+  // Income-statement footnote
+  setT("fn-fin", "Annual financials — FY ended " + k.fin_period + " · Source: Yahoo Finance (yfinance)");
+  renderChart("ch-stock",  d.charts.stock);
+  renderChart("ch-fin",    d.charts.financials);
+  renderChart("ch-returns",d.charts.returns);
+  setH("peer-table",d.peers);
+  setT("peer-hd","Peer Comparison — "+c.name);
+
+  // S2 — Country overview
+  setT("s2-title","Country Overview — "+c.country);
+  setT("country-text",d.country_text);
+  setT("k-gdp",m.gdp_s);   setT("k-cpi",m.cpi_s);
+  setT("k-ca",m.ca_s);     setT("k-ue",m.unemp_s);
+  setT("k-fxlbl",m.fx_lbl); setT("k-fx",m.fx_last);
+  setT("k-fxchg",m.fx_chg);
+  // Dynamic k-sub labels with WB year
+  const wbLbl = "Latest available: " + m.wb_year + " · World Bank";
+  setT("k-gdp-sub", wbLbl); setT("k-cpi-sub", wbLbl);
+  setT("k-ca-sub",  wbLbl); setT("k-ue-sub",  wbLbl);
+  setT("fn-wb", "Macro indicators: World Bank (latest available year: " + m.wb_year + ") · FX spot: Yahoo Finance · 2-yr window");
+  // Monetary policy & credit
+  setT("k-pol",  m.pol_s);
+  setT("k-yld",  m.yld_s);
+  setT("k-term", m.term_s);
+  setT("k-cds",  m.cds_s);
+  const fredLbl = "As of " + m.fred_date + " · FRED/OECD";
+  setT("k-pol-sub", fredLbl); setT("k-yld-sub", fredLbl);
+  setT("fn-macro", "CB policy rate & 10yr gov bond yield: FRED/OECD IRSTCB01/IRLTLT01 series · As of " + m.fred_date
+       + " · Est. 5yr CDS: rating-implied range (Moody's/S&P mapping, indicative)");
+  const sb=document.getElementById("stance-badge");
+  if(sb){sb.textContent=m.stance;sb.style.background=m.stance_col;}
+  setT("stance-desc", m.stance_desc);
+  renderChart("ch-gdp",   d.charts.gdp);
+  renderChart("ch-cpi",   d.charts.cpi);
+  renderChart("ch-fx",    d.charts.fx);
+  renderChart("ch-spread",d.charts.spread);
+  renderChart("ch-rates", d.charts.rates);
+
+  highlightCurrent();
+}
+
+switchFirm(CURRENT);
+</script>
+</body>
+</html>
