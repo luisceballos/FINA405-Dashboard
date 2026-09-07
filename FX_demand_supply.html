@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FX Supply &amp; Demand — Market Events | FINA 405</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<style>
+:root{
+  --bg:#0f172a;--surf:#1e293b;--surf2:#243047;--text:#f1f5f9;--muted:#94a3b8;
+  --blue:#2563eb;--bluel:#60a5fa;--amber:#d97706;--amberl:#fbbf24;
+  --green:#22c55e;--red:#ef4444;--purple:#8b5cf6;--teal:#14b8a6;
+  --border:#334155;--border2:#1e3a5f;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:13.5px;line-height:1.55;height:100vh;display:flex;flex-direction:column}
+header{padding:14px 22px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;flex-shrink:0}
+header h1{font-size:1.2rem;font-weight:700;letter-spacing:-.4px}
+.subtitle{font-size:.73rem;color:var(--muted)}
+.main{display:grid;grid-template-columns:280px 1fr;flex:1;overflow:hidden}
+@media(max-width:800px){.main{grid-template-columns:1fr;grid-template-rows:auto 1fr}}
+
+/* ── Left sidebar ── */
+.sidebar{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-top{padding:12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sidebar-top input{width:100%;background:var(--surf2);border:1px solid var(--border);color:var(--text);padding:7px 11px;border-radius:7px;font-size:.82rem;outline:none}
+.sidebar-top input:focus{border-color:var(--blue)}
+.filter-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.fpill{border-radius:20px;padding:3px 9px;font-size:.68rem;font-weight:600;cursor:pointer;border:1px solid transparent;opacity:.55;transition:.15s}
+.fpill.on{opacity:1;border-color:currentColor}
+.ev-list{overflow-y:auto;flex:1;padding:6px}
+.ev-item{padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:3px;border:1px solid transparent;transition:.15s}
+.ev-item:hover{background:var(--surf2);border-color:var(--border)}
+.ev-item.active{background:var(--surf2);border-color:var(--blue)}
+.ev-item .ei-year{font-size:.69rem;color:var(--muted)}
+.ev-item .ei-title{font-weight:600;font-size:.84rem;line-height:1.3}
+.ev-item .ei-ccy{font-size:.71rem;color:var(--muted);margin-top:2px}
+
+/* ── Right content ── */
+.content{display:flex;flex-direction:column;overflow:hidden}
+.content-inner{flex:1;overflow-y:auto;padding:18px 22px}
+.placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);gap:10px;text-align:center}
+.placeholder .big{font-size:2.5rem}
+
+/* Event header */
+.ev-header{margin-bottom:14px}
+.ev-header .eh-date{font-size:.72rem;color:var(--muted);font-weight:500}
+.ev-header h2{font-size:1.2rem;font-weight:700;margin:3px 0 7px}
+.badge-row{display:flex;flex-wrap:wrap;gap:5px}
+.badge{border-radius:4px;padding:2px 8px;font-size:.68rem;font-weight:700}
+.ch-monetary{background:#1d4ed820;color:var(--bluel)}.ch-carry{background:#7c3aed20;color:#a78bfa}
+.ch-safe{background:#0f766e20;color:var(--teal)}.ch-trade{background:#92400e20;color:var(--amberl)}
+.ch-fiscal{background:#7f1d1d20;color:#fca5a5}.ch-intervention{background:#14532d20;color:#86efac}
+
+/* Context tabs */
+.ctx-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:14px}
+.ctx-tab{padding:6px 14px;border-radius:5px 5px 0 0;cursor:pointer;font-size:.8rem;font-weight:500;color:var(--muted);background:transparent;border:none;transition:.12s}
+.ctx-tab:hover{color:var(--text)}.ctx-tab.active{color:var(--text);background:var(--surf);border-bottom:2px solid var(--blue)}
+.ctx-panel{display:none}.ctx-panel.active{display:block}
+
+/* Text content */
+.section-h{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;margin-bottom:6px}
+.body-text{font-size:.85rem;color:#cbd5e1;line-height:1.78;margin-bottom:12px}
+.highlights{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:14px}
+.hl-card{background:var(--surf2);border:1px solid var(--border2);border-radius:8px;padding:11px 13px}
+.hl-card .hl-val{font-size:1.3rem;font-weight:700;margin-bottom:2px}
+.hl-card .hl-label{font-size:.72rem;color:var(--muted)}
+.sd-chain{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:10px 0 14px}
+.sd-box{background:var(--surf2);border:1px solid var(--border);border-radius:5px;padding:4px 9px;font-size:.76rem;font-weight:500}
+.sd-arr{color:var(--muted)}
+
+/* Animated chart area */
+.chart-area{background:var(--surf);border:1px solid var(--border);border-radius:10px;padding:10px;margin-top:14px}
+.chart-controls{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.ctrl-btn{background:var(--blue);color:#fff;border:none;border-radius:6px;padding:6px 16px;cursor:pointer;font-size:.82rem;font-weight:600;transition:.15s}
+.ctrl-btn:hover{background:#1d4ed8}.ctrl-btn.pause{background:#334155}
+.ctrl-btn.pause:hover{background:#475569}
+.speed-sel{background:var(--surf2);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;font-size:.8rem}
+.chart-label{font-size:.78rem;color:var(--muted)}
+.progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;flex:1;min-width:100px}
+.progress-fill{height:100%;background:var(--blue);border-radius:2px;transition:.1s;width:0%}
+#anim-chart{height:340px}
+.chart-note{margin-top:8px;padding:7px 12px;background:#1e293b;border-left:3px solid #2563eb;border-radius:0 6px 6px 0;font-size:.78rem;color:#94a3b8;line-height:1.5}
+.chart-note b{color:#cbd5e1}
+.note-up{color:#22c55e;font-weight:600}
+.note-icon{color:#60a5fa;font-weight:600;margin-right:4px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>FX Supply &amp; Demand &nbsp;·&nbsp; <span style="color:var(--bluel)">27 Market Events</span> <span style="color:var(--amberl)">2000–2026</span></h1>
+  <span class="subtitle">FINA 405 · International Financial Management · USD Knauss School of Business</span>
+</header>
+
+<div class="main">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-top">
+      <input id="ev-search" type="text" placeholder="🔍 Search events…" oninput="filterEvents()"/>
+      <div class="filter-pills" id="filter-pills"></div>
+    </div>
+    <div class="ev-list" id="ev-list"></div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <div class="content-inner" id="content-inner">
+      <div class="placeholder">
+        <div class="big">📈</div>
+        <div style="font-size:1rem;font-weight:600">Select an event from the left</div>
+        <div style="font-size:.82rem;max-width:320px">Explore how supply &amp; demand shocks moved FX markets — with animated before/after charts and full context</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// CHANNELS
+// ═══════════════════════════════════════════════════════════════════
+const CH = {
+  monetary:     {label:"Monetary Policy",    css:"ch-monetary",    icon:"🏦"},
+  carry:        {label:"Carry Trade",        css:"ch-carry",       icon:"💸"},
+  safe:         {label:"Safe Haven",         css:"ch-safe",        icon:"🛡️"},
+  trade:        {label:"Trade Flows",        css:"ch-trade",       icon:"📦"},
+  fiscal:       {label:"Fiscal/Debt Shock",  css:"ch-fiscal",      icon:"💣"},
+  intervention: {label:"Gov't Intervention", css:"ch-intervention",icon:"🏛️"},
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// EVENTS DATA
+// ═══════════════════════════════════════════════════════════════════
+// series: array of { label, base (rate at day -60), shock (% change at event), vol, trend (prior drift/day), revert (post mean-reversion speed) }
+// shock in decimal, positive = currency gains vs USD, negative = currency loses vs USD
+
+const EVENTS = [
+{id:"tequila",year:1994,date:"Dec 20, 1994",title:"Tequila Crisis — Mexico Devaluation",ccy:"USD/MXN",channels:["fiscal","monetary"],
+ series:[{label:"USD/MXN",base:0.295,shock:-0.52,vol:0.008,trend:-0.0002,revert:0.04}],
+ bg:`In 1994, Mexico maintained a fixed exchange rate (peso pegged near 3.4 per USD) despite chronic current account deficits financed by short-term dollar debt (Tesobonos). Political shocks — the Chiapas uprising and two political assassinations — accelerated capital flight. Foreign reserves collapsed from $28bn to $6bn in months. The government had no choice but to devalue.`,
+ what:`On December 20, incoming Finance Minister Serra Puche announced an unexpected 15% devaluation. Instead of calming markets, it signalled weakness. Investors panicked and sold ALL peso assets — the peso fell 50% within weeks. The US organized a $50bn emergency rescue package (the first IMF-led EM bailout of its scale) within weeks.`,
+ chain:["Fixed rate unsustainable","Reserves depleted","Surprise devaluation","Market panic (supply of MXN surges)","Run on Tesobonos","US/IMF rescue package"],
+ highlights:[{val:"−50%",label:"MXN loss vs USD in 8 weeks"},{val:"$50bn",label:"US emergency rescue package"},{val:"7%",label:"Mexico GDP contraction in 1995"},{val:"50%",label:"Mexican interest rates at peak"}]},
+
+{id:"asian97",year:1997,date:"Jul 2, 1997",title:"Asian Financial Crisis",ccy:"THB · KRW · IDR",channels:["fiscal","carry","safe"],
+ series:[{label:"USD/THB",base:0.039,shock:-0.55,vol:0.007,trend:-0.0001,revert:0.03},{label:"USD/KRW",base:0.00115,shock:-0.48,vol:0.006,trend:-0.0001,revert:0.035}],
+ bg:`Asian "tiger" economies ran large current account deficits financed by dollar-denominated short-term debt, while maintaining quasi-fixed pegs to USD. When the Thai baht came under speculative attack, the contagion spread rapidly. George Soros and other hedge funds shorted Asian currencies aggressively. The IMF attached severe austerity conditions to rescue packages, deepening the recessions.`,
+ what:`Thailand abandoned its USD peg on July 2, 1997. The baht fell 18% that day. Within months, Indonesia (IDR −80%), South Korea (KRW −48%), Malaysia, and the Philippines followed. Korea needed a $57bn IMF bailout — then the largest in history. Indonesia's GDP contracted 13.1% in 1998. 24 million people fell into poverty across Asia.`,
+ chain:["Pegged currencies + USD debt","Current account deficits","Speculative attacks begin","Reserves collapse","Pegs abandoned","Contagion across region"],
+ highlights:[{val:"−80%",label:"Indonesian Rupiah loss"},{val:"−48%",label:"Korean Won loss"},{val:"$57bn",label:"Korea IMF bailout"},{val:"−13%",label:"Indonesia GDP 1998"}]},
+
+{id:"brazil99",year:1999,date:"Jan 13, 1999",title:"Brazil Real Devaluation",ccy:"USD/BRL",channels:["fiscal","monetary"],
+ series:[{label:"USD/BRL",base:0.850,shock:-0.42,vol:0.010,trend:-0.0003,revert:0.035}],
+ bg:`After the Asian crisis, Brazil kept the real in a crawling peg system to attract foreign capital. High domestic interest rates (>40%) kept money in Brazil — but at enormous fiscal cost. As the Asian and Russian crises deepened global risk aversion, capital fled EM. Brazil spent $40bn of reserves defending the peg in months. Governor of Minas Gerais Itamar Franco announced he would default on his state's debts in January 1999.`,
+ what:`On January 13, 1999, Brazil widened the exchange rate band, effectively devaluing. Two days later they abandoned the peg entirely. The real fell 40% in a month. Contrary to predictions, Brazil's economy recovered quickly — inflation stayed relatively contained thanks to an inflation-targeting framework adopted immediately after the float.`,
+ chain:["Crawling peg under pressure","Minas Gerais default shock","Reserve depletion","Band widened → abandoned","Real floats freely","Inflation targeting adopted"],
+ highlights:[{val:"−40%",label:"BRL loss vs USD (Jan–Feb 1999)"},{val:"$40bn",label:"Reserves spent defending peg"},{val:"45%",label:"Brazilian interest rates pre-devaluation"},{val:"+4.2%",label:"Brazil GDP recovery in 2000"}]},
+
+{id:"plaza",year:1985,date:"Sep 22, 1985",title:"Plaza Accord — Coordinated USD Devaluation",ccy:"USD/DEM · USD/JPY",channels:["intervention","trade"],
+ series:[{label:"DEM/USD (proxy EUR)",base:0.41,shock:+0.08,vol:0.005,trend:0.0001,revert:0.02},{label:"USD/JPY",base:0.0042,shock:+0.10,vol:0.004,trend:0.0001,revert:0.02}],
+ bg:`By 1985 the USD had appreciated 50% since 1980, driven by high US interest rates under Volcker. The strong dollar decimated US manufacturing competitiveness and created massive trade deficits with Japan, Germany, France, and UK. US protectionist legislation was gaining momentum in Congress, threatening global trade.`,
+ what:`Finance ministers of the G5 (US, Japan, West Germany, France, UK) met secretly at the Plaza Hotel in New York and agreed to jointly intervene to depreciate the dollar. Central banks sold dollars simultaneously. The USD fell 50% vs DEM and 51% vs JPY over the next two years — the only successful multilateral FX coordination in modern history.`,
+ chain:["USD 50% overvalued","US trade deficits surge","Protectionist pressure in Congress","G5 secret Plaza meeting","Coordinated central bank sales of USD","USD falls 50% in 2 years"],
+ highlights:[{val:"−50%",label:"USD vs DEM in 2 years"},{val:"−51%",label:"USD vs JPY in 2 years"},{val:"G5",label:"Coordinated intervention — unprecedented"},{val:"1985",label:"Only successful multilateral FX accord"}]},
+
+{id:"911",year:2001,date:"Sep 11, 2001",title:"9/11 Attacks — Market Shock",ccy:"USD/JPY · EUR/USD",channels:["safe","monetary"],
+ series:[{label:"USD/JPY",base:0.00840,shock:+0.025,vol:0.005,trend:0,revert:0.05},{label:"EUR/USD",base:0.910,shock:-0.018,vol:0.006,trend:0,revert:0.04}],
+ bg:`The 9/11 attacks on the World Trade Center and Pentagon caused an immediate global risk-off shock. US equity markets were closed for 4 days — the longest closure since the Great Depression. The Fed cut rates 50bp on September 17 in an emergency move, then cut 5 more times in 2001.`,
+ what:`In the hours after the attacks, the yen and Swiss franc surged as safe havens. European markets fell sharply before US markets reopened. The USD initially fell on global uncertainty, then recovered as the Fed's emergency cuts and market reopening stabilized sentiment. The attack accelerated the US recession already underway, leading to the deepest rate cut cycle since the 1980s.`,
+ chain:["Unprecedented security shock","Global risk-off","Flight to JPY and CHF","Fed emergency 50bp cut","Markets closed 4 days","Economic recession deepens"],
+ highlights:[{val:"−14%",label:"S&P 500 in week of reopening"},{val:"50bp",label:"Fed emergency cut Sep 17"},{val:"4 days",label:"NYSE closed — longest since 1929"},{val:"5",label:"Additional Fed cuts through 2001"}]},
+
+{id:"argentina01",year:2001,date:"Dec 1, 2001",title:"Argentina Default & Convertibility Collapse",ccy:"USD/ARS",channels:["fiscal","monetary"],
+ series:[{label:"USD/ARS (official)",base:1.00,shock:-0.67,vol:0.012,trend:-0.0001,revert:0.01}],
+ bg:`Argentina maintained a 1:1 currency board (peso = dollar) since 1991. This eliminated inflation but removed all monetary policy flexibility. After Brazil devalued in 1999, Argentina lost competitiveness. GDP fell for 3 consecutive years. The government imposed the "corralito" — freezing bank deposits — on December 1, 2001.`,
+ what:`Argentina defaulted on $100bn of sovereign debt on December 23 — the largest sovereign default in history at that time. In January 2002, President Duhalde announced the end of convertibility. The peso was devalued to 1.4:1, then floated freely, falling to 3.9:1 by mid-2002. Savings in USD were converted to pesos at 1.4 ("pesification") — wiping out 64% of dollar depositors' wealth overnight.`,
+ chain:["Currency board with overvalued ARS","Recession 3 years","Bank freeze (corralito)","$100bn sovereign default","Convertibility abolished","ARS floated → −75%"],
+ highlights:[{val:"$100bn",label:"Largest sovereign default (2001)"},{val:"−75%",label:"ARS loss after devaluation"},{val:"−10.9%",label:"Argentina GDP contraction 2002"},{val:"64%",label:"Dollar savings wiped out by pesification"}]},
+
+{id:"lehman",year:2008,date:"Sep 15, 2008",title:"Lehman Brothers Collapse — GFC",ccy:"USD · JPY · EM",channels:["safe","carry","monetary"],
+ series:[{label:"USD/JPY",base:0.00912,shock:+0.06,vol:0.008,trend:0.0001,revert:0.03},{label:"EUR/USD",base:1.42,shock:-0.08,vol:0.010,trend:-0.0001,revert:0.04}],
+ bg:`Lehman Brothers, the 4th-largest US investment bank, filed for bankruptcy on September 15, 2008 — the largest bankruptcy in US history. The collapse froze global dollar funding markets. Banks stopped lending to each other (LIBOR spiked). USD became scarce worldwide as dollar-denominated credit contracted instantly.`,
+ what:`Paradoxically, USD surged despite being the epicenter of the crisis — because global banks needed dollars to fund their USD-denominated liabilities. JPY surged as the largest carry trade in history (borrow yen, buy EM and risk assets) unwound simultaneously. EM currencies collapsed 20-40%. The Fed opened emergency dollar swap lines with 14 central banks worldwide to address the dollar shortage.`,
+ chain:["Lehman bankruptcy","Dollar funding markets freeze","USD scarce globally","Carry trade unwinds simultaneously","JPY and USD surge","EM currencies collapse 20-40%"],
+ highlights:[{val:"$639bn",label:"Lehman bankruptcy size"},{val:"+25%",label:"JPY appreciation vs USD (3 months)"},{val:"−40%",label:"Typical EM currency loss"},{val:"14",label:"Central banks receiving Fed dollar swaps"}]},
+
+{id:"taptan",year:2013,date:"May 22, 2013",title:"Fed Taper Tantrum",ccy:"EM currencies",channels:["monetary","carry"],
+ series:[{label:"USD/BRL",base:0.493,shock:-0.08,vol:0.007,trend:-0.0001,revert:0.03},{label:"USD/INR",base:0.0183,shock:-0.09,vol:0.006,trend:-0.0002,revert:0.025}],
+ bg:`After years of QE (quantitative easing), Fed Chairman Ben Bernanke told Congress on May 22, 2013 that the Fed "could" slow the pace of bond purchases "in the next few meetings." This was a minor, conditional statement — but markets reacted as if the era of easy money was ending. EM markets, which had received enormous capital inflows during QE, reversed sharply.`,
+ what:`US Treasury 10-year yields surged from 1.6% to 3% in months. Capital flooded back from EM to the US, as the interest rate differential that had driven EM inflows reversed. India's rupee fell 20%, Brazil's real fell 18%, Indonesia's rupiah fell 22%, South Africa's rand fell 25%. EM central banks raised rates defensively. The Fed did not actually taper until December 2013.`,
+ chain:["Bernanke hints at tapering QE","US yields surge","EM interest rate differential narrows","Capital flows reverse from EM to US","EM currencies sold","EM central banks raise rates defensively"],
+ highlights:[{val:"−20%",label:"Indian Rupee loss"},{val:"−22%",label:"Indonesian Rupiah loss"},{val:"+1.4%",label:"US 10Y yield jump in 4 months"},{val:"Dec 2013",label:"Actual taper start — 7 months later"}]},
+
+{id:"ecbneg",year:2014,date:"Jun 5, 2014",title:"ECB Negative Interest Rates",ccy:"EUR/USD",channels:["monetary","carry"],
+ series:[{label:"EUR/USD",base:1.363,shock:-0.025,vol:0.006,trend:-0.0002,revert:0.03}],
+ bg:`After the Eurozone debt crisis, the ECB had cut rates to near zero but still faced deflation risk and a stagnant economy. ECB President Mario Draghi decided to take the unprecedented step of charging banks to deposit money at the ECB — negative deposit rates. This was uncharted territory for a major central bank.`,
+ what:`On June 5, 2014, the ECB cut its deposit rate to −0.10% — the first major central bank to go negative. EUR fell 15% vs USD over the next year as the policy diverged from a Fed preparing to hike. The move sparked a long debate about the effectiveness of negative rates — do they stimulate or do they hurt banks and signal desperation? EUR fell from 1.40 to 1.05 by March 2015.`,
+ chain:["Eurozone deflation risk","Zero rate policy ineffective","ECB cuts to negative territory","EUR carry trade reverses","Capital leaves Eurozone","EUR falls toward parity with USD"],
+ highlights:[{val:"−0.10%",label:"First major CB negative rate"},{val:"−25%",label:"EUR/USD over following year"},{val:"1.05",label:"EUR/USD low in Mar 2015 (from 1.40)"},{val:"€1.1tn",label:"QE announced alongside — 'Draghi Bazooka'"}]},
+
+{id:"snb15",year:2015,date:"Jan 15, 2015",title:"SNB Black Swan — CHF Cap Removal",ccy:"EUR/CHF · USD/CHF",channels:["intervention","carry"],
+ series:[{label:"USD/CHF",base:1.022,shock:+0.30,vol:0.008,trend:0.0001,revert:0.06}],
+ bg:`In September 2011, as the Eurozone crisis drove safe-haven flows into CHF, the Swiss Franc appreciated so violently that the SNB imposed a cap: they would buy unlimited EUR to keep EUR/CHF above 1.20. For 3 years the SNB intervened massively, accumulating over €500bn in foreign reserves — equal to 80% of Swiss GDP. As ECB prepared for major QE in early 2015, defending the cap would require unlimited EUR purchases.`,
+ what:`On January 15, 2015, with no warning whatsoever, SNB Chairman Thomas Jordan announced the floor was abandoned. In minutes, EUR/CHF fell from 1.20 to 0.85 — a 29% move. USD/CHF fell 30%. It was the largest single-day move in a major currency in modern history. Dozens of currency brokers went bankrupt from client losses. The Polish mortgage crisis (many Poles had CHF mortgages) deepened overnight.`,
+ chain:["SNB caps CHF at 1.20 vs EUR (2011)","ECB announces QE → EUR to weaken","Defending cap requires unlimited buying","SNB abandons floor with zero warning","CHF surges 30% in minutes","Brokers bankrupted, EM CHF-debtors devastated"],
+ highlights:[{val:"30%",label:"CHF surge in minutes — single largest move"},{val:"0.85",label:"EUR/CHF low (from 1.20 floor)"},{val:"€500bn",label:"SNB reserves accumulated defending cap"},{val:"Jan 15",label:"'SNB Day' — still cited as tail risk example"}]},
+
+{id:"chindeval",year:2015,date:"Aug 11, 2015",title:"China Surprise Devaluation — CNY Fix",ccy:"USD/CNY · AUD · EM",channels:["monetary","trade"],
+ series:[{label:"USD/CNY",base:0.1612,shock:-0.028,vol:0.003,trend:-0.0001,revert:0.04},{label:"AUD/USD",base:0.735,shock:-0.035,vol:0.007,trend:-0.0002,revert:0.04}],
+ bg:`China had maintained a tightly managed CNY peg for years, with only gradual appreciation. By mid-2015, Chinese exports were slowing, the stock market had crashed 30%, and capital was flowing out. The People's Bank of China changed its daily fix mechanism — ostensibly to make it more market-oriented, but the first fix was 1.9% weaker than expected.`,
+ what:`On August 11, 2015, the PBoC set the CNY fix 1.9% weaker, the largest single-day devaluation in decades. Markets interpreted it as the start of a competitive devaluation to boost exports. Global commodity currencies (AUD, CAD, BRL) fell sharply as the implied demand for commodities dropped. EM currencies fell broadly. Chinese reserves fell $100bn/month as the PBoC then had to defend CNY from further weakness.`,
+ chain:["China growth slows, exports fall","PBoC changes fix mechanism","1.9% devaluation announcement","EM and commodity FX sell-off","Global deflation fears increase","China spends $1tn defending CNY"],
+ highlights:[{val:"−1.9%",label:"CNY devaluation — shock to markets"},{val:"−$1tn",label:"Chinese FX reserves spent Aug–Jan"},{val:"−8%",label:"AUD/USD in following week"},{val:"3%",label:"Global equities lost in 3 days"}]},
+
+{id:"brexit",year:2016,date:"Jun 24, 2016",title:"Brexit Referendum — UK Votes Leave",ccy:"GBP/USD",channels:["fiscal","safe"],
+ series:[{label:"GBP/USD",base:1.488,shock:-0.10,vol:0.009,trend:0.0001,revert:0.025}],
+ bg:`The UK held a referendum on EU membership on June 23, 2016. Polls showed a narrow Remain lead. Currency markets priced a ~75% probability of Remain — GBP had been rising for days before the vote. When counting began through the night, early results showed Leave performing better than expected.`,
+ what:`As Leave results poured in through the night of June 23-24, GBP fell in real time. By 5am London time, GBP/USD had fallen from 1.50 to 1.32 — a 10% overnight collapse, the largest single-day GBP move in history. Prime Minister Cameron resigned by morning. The pound stayed depressed for years. The uncertainty over trade relations with Europe suppressed UK investment and growth for a decade.`,
+ chain:["Referendum → Leave wins unexpectedly","Political uncertainty spikes","UK trade outlook deteriorates","PM Cameron resigns 7am","GBP supply surges as investors flee UK assets","GBP hits 31-year lows"],
+ highlights:[{val:"−10%",label:"GBP in one night — record move"},{val:"1.32",label:"GBP/USD low (from 1.50)"},{val:"31yr",label:"Lowest GBP level since 1985"},{val:"−6%",label:"FTSE 250 next day (UK-focused stocks)"}]},
+
+{id:"trump16",year:2016,date:"Nov 9, 2016",title:"Trump Election 2016 — Overnight FX Shock",ccy:"USD/MXN · USD/JPY",channels:["trade","safe","monetary"],
+ series:[{label:"USD/MXN",base:0.0530,shock:-0.13,vol:0.010,trend:-0.0001,revert:0.03},{label:"USD/JPY",base:0.00948,shock:-0.02,vol:0.006,trend:0.0001,revert:0.04}],
+ bg:`During the 2016 US presidential campaign, Donald Trump threatened to renegotiate NAFTA, impose tariffs on Mexico, and build a border wall. Mexico was the most exposed EM currency to a Trump victory. Markets had priced a ~70% probability of a Clinton win — MXN had been recovering all week as her polls led.`,
+ what:`As Trump's victory became clear through election night, MXN fell 13% — the largest single-day move since the 1994 crisis. Safe havens (JPY, CHF) rallied initially. But within hours, the market narrative shifted: Trump's promised tax cuts and infrastructure spending were reflationary → US yields rose → USD surged. JPY reversed and fell. The "Trump Trade" dominated: long USD, long US equities, short EM.`,
+ chain:["Trump wins unexpectedly","MXN falls 13% (NAFTA + tariff risk)","Initial risk-off: JPY/CHF surge","Narrative shifts: Trump = fiscal stimulus","US yields surge","USD reverses higher vs all EM and JPY"],
+ highlights:[{val:"−13%",label:"MXN overnight — largest since Tequila"},{val:"+1%",label:"US 10Y yield jump election night"},{val:"+10%",label:"USD/MXN in following weeks"},{val:"17.5→21",label:"MXN: 17.5 to 21 per USD in days"}]},
+
+{id:"eurodebt",year:2010,date:"Apr 23, 2010",title:"Eurozone Debt Crisis — Greece",ccy:"EUR/USD · EUR/CHF",channels:["fiscal","safe"],
+ series:[{label:"EUR/USD",base:1.335,shock:-0.06,vol:0.007,trend:-0.0002,revert:0.03},{label:"CHF/EUR (proxy)",base:1.42,shock:+0.05,vol:0.005,trend:0.0001,revert:0.03}],
+ bg:`Greece revealed in late 2009 that its deficit was 12.7% of GDP — double the previously reported figure. Bond markets began questioning whether Greece (and by extension Portugal, Ireland, Italy, Spain) could service their euro-denominated debts. Since the euro was a shared currency, Greece couldn't devalue. Markets began pricing a potential Eurozone breakup.`,
+ what:`On April 23, 2010, Greece formally requested an EU/IMF bailout — the first of three. EUR/USD fell from 1.51 to 1.19 over the next 12 months as the crisis spread to Portugal, Ireland, Italy, and Spain ("PIIGS"). Safe-haven demand for CHF became so extreme the SNB eventually imposed a cap (see SNB 2011). Mario Draghi's "whatever it takes" speech in July 2012 ultimately ended the crisis.`,
+ chain:["Greece reveals true deficit","Bond yields spike across southern Europe","EUR credibility questioned","EUR sold as Eurozone breakup priced","CHF demand surges (safe haven)","SNB eventually caps CHF"],
+ highlights:[{val:"−21%",label:"EUR/USD over 12 months"},{val:"35%",label:"Greek 2-year yield at peak"},{val:"€500bn",label:"ESM/EFSF rescue size"},{val:"Jul 2012",label:"Draghi 'whatever it takes' ends crisis"}]},
+
+{id:"covid",year:2020,date:"Mar 16, 2020",title:"COVID-19 Global Lockdowns",ccy:"USD · EM · JPY",channels:["safe","carry","monetary"],
+ series:[{label:"USD/JPY",base:0.00935,shock:+0.025,vol:0.008,trend:0,revert:0.035},{label:"USD/MXN",base:0.0497,shock:-0.09,vol:0.010,trend:-0.0001,revert:0.03}],
+ bg:`By early March 2020, COVID-19 had spread globally. On March 11, the WHO declared a pandemic. European countries began locking down. The US declared a national emergency on March 13. Global supply chains froze. US dollar funding stress emerged — dollar swap spreads spiked, as global banks scrambled for USD to fund their dollar liabilities.`,
+ what:`The Fed cut rates to 0% in two emergency moves (March 3 and 15), restarted QE, and opened unlimited dollar swap lines to 9 central banks. EM currencies collapsed 15-30% as capital fled to USD. MXN, BRL, ZAR, and RUB were hit hardest. USD surged paradoxically — as in 2008, the global dollar shortage overwhelmed the signal from Fed easing. Oil crash simultaneously hit commodity FX.`,
+ chain:["WHO pandemic declaration","Global lockdowns begin","Dollar funding stress → USD shortage","Fed cuts to 0% + emergency QE","EM capital flight (carry unwind)","Oil crashes → commodity FX collapses"],
+ highlights:[{val:"−30%",label:"BRL loss (worst EM, 3 months)"},{val:"0%",label:"Fed rates — emergency cut to zero"},{val:"$3tn",label:"Fed balance sheet expansion (2020)"},{val:"9",label:"Central banks receiving Fed swap lines"}]},
+
+{id:"snbcap",year:2011,date:"Sep 6, 2011",title:"SNB Imposes EUR/CHF Floor at 1.20",ccy:"EUR/CHF",channels:["intervention","safe"],
+ series:[{label:"USD/CHF",base:1.355,shock:-0.08,vol:0.006,trend:0.0002,revert:0.05}],
+ bg:`As the Eurozone debt crisis deepened in mid-2011, investors poured into CHF as the ultimate safe haven. EUR/CHF fell from 1.30 to 1.07 in weeks — a 17% CHF appreciation. Swiss exporters and tourism industry were devastated. The SNB intervened repeatedly and failed — it accumulated losses trying to hold the line.`,
+ what:`On September 6, 2011, the SNB shocked markets by announcing a hard floor at 1.20 EUR/CHF — and pledging to defend it with "unlimited" intervention. CHF fell 9% in minutes. The policy worked — the floor held until January 2015. The SNB accumulated €500bn in foreign reserves defending it. The episode is the textbook case of successful (temporary) FX intervention through credible commitment.`,
+ chain:["Eurozone crisis → CHF safe-haven surge","EUR/CHF falls to 1.07","Swiss exporters devastated","SNB announces 'unlimited' EUR buying at 1.20","CHF falls 9% instantly","Floor holds for 3.5 years"],
+ highlights:[{val:"1.07",label:"EUR/CHF before announcement"},{val:"−9%",label:"Immediate CHF fall on announcement"},{val:"€500bn",label:"Reserves accumulated defending floor"},{val:"3.5yr",label:"Floor held — until Jan 2015"}]},
+
+{id:"russia22",year:2022,date:"Feb 24, 2022",title:"Russia Invades Ukraine",ccy:"USD/RUB · EUR/USD",channels:["trade","safe","monetary"],
+ series:[{label:"USD/RUB",base:0.01299,shock:-0.40,vol:0.015,trend:-0.0001,revert:0.06},{label:"EUR/USD",base:1.132,shock:-0.025,vol:0.007,trend:-0.0001,revert:0.04}],
+ bg:`Russia's military buildup on Ukraine's border had been building for months. Markets priced some probability of invasion but not an all-out war. On February 24, Russia launched a full-scale invasion. Within days, the US, EU, and allies imposed the most severe financial sanctions ever applied to a major economy: SWIFT exclusion, central bank asset freeze, and export controls.`,
+ what:`The ruble lost 40% in days as sanctions froze Russia's ability to transact internationally. Russia's central bank raised rates to 20%, then imposed capital controls. EUR fell as Europe faced an energy crisis — Russia supplied 40% of EU gas. CHF and USD surged. The ruble partially recovered by May after Russia mandated energy payment in rubles and imposed strict capital controls — a forced supply restriction of RUB.`,
+ chain:["Russia invades Ukraine","SWIFT exclusion + asset freeze","RUB −40% in days","Russia: 20% rate hike + capital controls","EUR falls on energy crisis","RUB partially recovers via mandatory ruble payments"],
+ highlights:[{val:"−40%",label:"RUB loss in days post-invasion"},{val:"20%",label:"Russia emergency rate hike"},{val:"$300bn",label:"Russian central bank assets frozen"},{val:"$0.01",label:"USD/RUB low before capital controls"}]},
+
+{id:"ukbudget",year:2022,date:"Sep 23, 2022",title:"UK Mini-Budget Crisis (Truss)",ccy:"GBP/USD",channels:["fiscal","monetary"],
+ series:[{label:"GBP/USD",base:1.126,shock:-0.036,vol:0.009,trend:-0.0001,revert:0.03}],
+ bg:`New Prime Minister Liz Truss and Chancellor Kwasi Kwarteng unveiled a "mini-budget" on September 23, 2022 featuring £45bn in unfunded tax cuts — the largest in 50 years — while the UK was already running a large deficit and the BoE was hiking rates to fight 10% inflation. The IFS called it the most significant tax cut since 1972.`,
+ what:`Bond markets immediately revolted. UK gilt yields spiked 100bp in days. GBP/USD fell to $1.035 — an all-time record low. The BoE was forced to announce emergency gilt purchases to prevent pension fund margin calls. Kwarteng was fired after 38 days — the shortest-serving Chancellor in history. Truss resigned 45 days after taking office. The episode showed that fiscal credibility is a fundamental driver of FX.`,
+ chain:["£45bn unfunded tax cuts announced","Gilt yields spike 100bp","GBP all-time low $1.035","Pension funds face margin calls","BoE emergency intervention","Chancellor fired — Truss resigns 45 days"],
+ highlights:[{val:"$1.035",label:"GBP/USD all-time record low"},{val:"38",label:"Days Kwarteng lasted as Chancellor"},{val:"45",label:"Days Truss lasted as PM"},{val:"100bp",label:"Gilt yield spike in days"}]},
+
+{id:"bojintv",year:2022,date:"Sep 22, 2022",title:"Bank of Japan FX Intervention",ccy:"USD/JPY",channels:["intervention","monetary"],
+ series:[{label:"USD/JPY",base:0.00685,shock:+0.018,vol:0.006,trend:-0.0002,revert:0.04}],
+ bg:`The yen had been weakening all year as the Fed hiked aggressively while the BoJ maintained its ultra-loose Yield Curve Control policy — keeping 10-year JGB yields capped near 0%. The divergence between US and Japanese rates drove massive yen selling. USD/JPY hit 145 in September 2022 — its weakest level since 1998. Japanese importers and consumers faced soaring import costs.`,
+ what:`On September 22, Japan's Ministry of Finance authorized the BoJ to buy yen — the first FX intervention since 1998. JPY surged nearly 2% in minutes. Japan spent ¥2.84 trillion (~$20bn) in a single day. The government intervened again in October 2022 (¥6.3tn) and in 2023 (multiple times). The fundamental issue — Fed/BoJ policy divergence — remained, limiting the intervention's long-term effectiveness.`,
+ chain:["Fed hikes aggressively, BoJ stays easy","Interest rate differential drives yen selling","USD/JPY hits 145 (24yr low for JPY)","Ministry of Finance authorizes intervention","BoJ buys ¥2.84tn of yen","JPY surges but fundamental divergence persists"],
+ highlights:[{val:"¥2.84tn",label:"Yen bought in single day (~$20bn)"},{val:"145",label:"USD/JPY level triggering intervention"},{val:"1998",label:"Last time Japan intervened in FX"},{val:"+2%",label:"JPY immediate surge post-intervention"}]},
+
+{id:"fedpeak",year:2023,date:"Jul 26, 2023",title:"Fed Rate-Hike Cycle Peak",ccy:"EM currencies · EUR/USD",channels:["monetary","carry"],
+ series:[{label:"USD/BRL",base:0.202,shock:+0.012,vol:0.007,trend:0.0001,revert:0.035},{label:"USD/MXN",base:0.0579,shock:+0.009,vol:0.006,trend:0.0001,revert:0.03}],
+ bg:`The Federal Reserve had raised rates 525bp in 16 months — the fastest tightening cycle since the 1980s. USD had surged throughout 2022-23. The July 26, 2023 meeting delivered a final 25bp hike. Fed Chair Powell's statement was widely interpreted as signalling the end of the tightening cycle, with markets beginning to price the pivot to cuts.`,
+ what:`As the market priced peak Fed rates, the interest rate differential that had driven USD strength began to narrow. Capital resumed flowing to EM — especially Mexico (nearshoring boom) and Brazil (high real rates). The DXY fell from ~107 to ~100 by year-end. MXN strengthened to record levels vs USD in 2023. This is the textbook working of the interest rate parity and carry trade channels.`,
+ chain:["Fed delivers final 25bp hike","Market prices peak rates","USD carry advantage begins shrinking","Capital rotates back to EM","EM interest rate differentials attractive","DXY falls, EM currencies rally"],
+ highlights:[{val:"525bp",label:"Total Fed hiking cycle 2022-2023"},{val:"107→100",label:"DXY over H2 2023"},{val:"17.5",label:"USD/MXN — record strong peso (Nov 2023)"},{val:"+15%",label:"MXN appreciation vs USD in 2023"}]},
+
+{id:"svb",year:2023,date:"Mar 10, 2023",title:"SVB Collapse — US Banking Panic",ccy:"USD · CHF · EM",channels:["safe","monetary"],
+ series:[{label:"USD/CHF",base:1.093,shock:+0.018,vol:0.006,trend:0.0001,revert:0.045},{label:"USD/MXN",base:0.0537,shock:-0.012,vol:0.007,trend:0.0001,revert:0.04}],
+ bg:`Silicon Valley Bank (SVB) ran a classic bank run on March 10, 2023 — the largest US bank failure since 2008. SVB had invested $91bn of deposits in long-term US Treasuries and mortgage bonds. As the Fed raised rates, those bonds lost value. A $1.8bn loss announcement triggered a bank run, with $42bn withdrawn in one day via mobile banking.`,
+ what:`The FDIC took over SVB on March 10. Credit Suisse, already under stress, saw its stock collapse the following week and was forced into an emergency merger with UBS — ending 167 years of independence. CHF and JPY surged as safe havens. The Fed created the Bank Term Funding Program (BTFP) to backstop the banking system. EM currencies fell briefly on the risk-off, then recovered as the crisis was contained.`,
+ chain:["SVB $1.8bn loss announced","$42bn bank run in one day","FDIC takeover","Credit Suisse emergency UBS merger","CHF/JPY surge on safe haven","Fed creates BTFP to backstop banks"],
+ highlights:[{val:"$42bn",label:"Withdrawn from SVB in single day"},{val:"$212bn",label:"SVB assets — 2nd largest US bank failure"},{val:"167yr",label:"Credit Suisse history ended"},{val:"BTFP",label:"Fed emergency facility to backstop banks"}]},
+
+{id:"turkey21",year:2021,date:"Nov 20, 2021",title:"Turkey — Erdoğan Fires Central Bankers",ccy:"USD/TRY",channels:["monetary","fiscal"],
+ series:[{label:"USD/TRY",base:0.0882,shock:-0.30,vol:0.015,trend:-0.0004,revert:0.02}],
+ bg:`Turkey had been suffering chronic inflation and lira weakness for years, driven by President Erdoğan's unorthodox belief that high interest rates cause inflation (the opposite of conventional economics). He had fired three central bank governors in two years for refusing to cut rates. By late 2021, Turkey was hiking rates to fight 20%+ inflation — which Erdoğan opposed.`,
+ what:`In November 2021, Erdoğan fired the central bank governor and replaced him with a loyalist who immediately began cutting rates despite 21% inflation. The lira lost 45% of its value by year-end. The central bank burned through $150bn in reserves trying to defend the lira. The episode is the defining case study of how central bank independence affects FX — and what happens when it is destroyed.`,
+ chain:["Erdoğan fires 3rd central bank chief","New governor cuts rates into 21% inflation","Markets lose confidence in monetary policy","TRY supply surges as locals dollarize","Central bank burns reserves defending lira","TRY −45% in 2021 alone"],
+ highlights:[{val:"3",label:"Central bank governors fired by Erdoğan"},{val:"−45%",label:"TRY loss in 2021 alone"},{val:"85%",label:"USD/TRY high in 2022 (from ~8 in 2021)"},{val:"$150bn",label:"FX reserves burned defending lira"}]},
+
+{id:"yencarry",year:2024,date:"Aug 5, 2024",title:"Yen Carry Trade Unwind",ccy:"JPY · EM",channels:["carry","safe","monetary"],
+ series:[{label:"USD/JPY",base:0.00641,shock:+0.065,vol:0.008,trend:-0.0002,revert:0.04},{label:"USD/MXN",base:0.0540,shock:-0.024,vol:0.009,trend:0.0001,revert:0.04}],
+ bg:`For years, investors borrowed yen at near-zero rates to buy higher-yielding assets globally — the world's largest carry trade, estimated at $4 trillion. On July 31, 2024, the BoJ unexpectedly raised rates 15bp and signalled more hikes — a dramatic shift from decades of ultra-loose policy. Meanwhile, weak US jobs data raised recession fears, triggering risk-off sentiment simultaneously.`,
+ what:`JPY surged 5% in 3 days — the fastest move in decades. Carry traders who had borrowed yen were forced to buy JPY to close positions, creating explosive demand. EM currencies (MXN, BRL, IDR) fell 3-5%. The Nikkei fell 12.4% on August 5 — the largest single-day drop since 1987's Black Monday. The episode revealed the systemic size of the carry trade and its interconnectedness with global equity markets.`,
+ chain:["BoJ unexpectedly hikes + US recession fears","Carry trade cost jumps","$4tn carry trade begins unwinding","Simultaneous JPY buying globally","EM and risk assets sold to fund JPY repayment","Nikkei −12% — global equity rout"],
+ highlights:[{val:"$4tn",label:"Estimated size of JPY carry trade"},{val:"+5%",label:"JPY in 3 days (fastest move in decades)"},{val:"−12.4%",label:"Nikkei on Aug 5 — worst since 1987"},{val:"−5%",label:"Average EM currency loss"}]},
+
+{id:"mexico24",year:2024,date:"Nov 6, 2024",title:"Mexico Post-Trump Election Shock",ccy:"USD/MXN",channels:["trade","monetary"],
+ series:[{label:"USD/MXN",base:0.0501,shock:-0.028,vol:0.009,trend:0.0001,revert:0.03}],
+ bg:`After Trump's 2016 election, Mexico had adapted and nearshoring investment had boomed — companies moved manufacturing to Mexico to serve the US market under USMCA. MXN had become one of the best-performing EM currencies. When Trump ran again in 2024 threatening 200% tariffs on Mexico, the nearshoring thesis was suddenly at risk.`,
+ what:`As Trump's victory became clear on election night (Nov 5-6, 2024), MXN fell 3% overnight. Over the following weeks it weakened further to near 21/USD — erasing over a year of gains. Banxico maintained high rates (10.25%) to limit the selloff. Canadian dollar also fell on tariff fears. The episode illustrates how trade flow expectations — not just current flows — drive FX.`,
+ chain:["Trump wins 2024 election","200% tariff threats on Mexico","Nearshoring investment thesis at risk","FDI flow expectations collapse","MXN supply surges / demand falls","Banxico holds high rates defensively"],
+ highlights:[{val:"−3%",label:"MXN overnight loss"},{val:"21",label:"USD/MXN high (from 17)"},{val:"10.25%",label:"Banxico rate — held to defend MXN"},{val:"−15%",label:"MXN total loss Nov 2024 – early 2025"}]},
+
+{id:"libday",year:2025,date:"Apr 2, 2025",title:"US 'Liberation Day' — Global Tariffs",ccy:"MXN · KRW · JPY · EUR",channels:["trade","safe","monetary"],
+ series:[{label:"USD/JPY",base:0.00671,shock:+0.016,vol:0.007,trend:0.0001,revert:0.035},{label:"USD/MXN",base:0.0487,shock:-0.021,vol:0.009,trend:-0.0001,revert:0.03}],
+ bg:`President Trump announced sweeping "reciprocal" tariffs on virtually all US trading partners — 25% on Canada/Mexico, 20% on EU, 34% on China. The announcement came with a chart of "tariff rates other countries charge the US" that economists widely criticized as methodologically flawed (it divided trade deficits by imports).`,
+ what:`Markets reacted with a twin signal: (1) Export-oriented EM currencies (MXN, KRW, TWD, CNY) fell on trade flow damage; (2) Unusually, USD itself weakened as tariffs raised US inflation expectations and threatened global dollar recycling. JPY and CHF surged. EUR rose vs USD as Europe's export surplus with the US would shrink, reducing dollar demand. A case of tariffs damaging the dollar itself.`,
+ chain:["Blanket tariffs on all trading partners","Export-EM currencies (MXN/KRW/CNY) fall","USD weakens: inflation fears + less dollar recycling","JPY/CHF surge as safe haven","EUR rises: smaller surplus = less USD demand","Global growth forecasts cut 0.5-1%"],
+ highlights:[{val:"34%",label:"US tariff on China"},{val:"20%",label:"US tariff on EU"},{val:"+3%",label:"JPY vs USD in one week"},{val:"−5%",label:"KRW/TWD in one week"}]},
+
+{id:"chile99",year:1999,date:"Sep 2, 1999",title:"Chile Abandons Exchange Rate Band",ccy:"USD/CLP",channels:["monetary","intervention"],
+ series:[{label:"USD/CLP",base:0.00204,shock:-0.08,vol:0.006,trend:-0.0002,revert:0.03}],
+ bg:`Chile had maintained a managed "band" system since 1984 — the peso was allowed to float within ±5-7% around a central rate, adjusted for inflation differentials. By 1999, after the Asian crisis hit copper prices and capital flows, defending the band was costly. Chile's economic model was widely seen as EM best practice — so the decision on how to exit the band was globally watched.`,
+ what:`On September 2, 1999, the Chilean Central Bank announced it was abandoning the exchange rate band entirely, allowing the peso to float freely. Unlike Argentina (which clung to its peg until collapse) or Brazil (forced devaluation), Chile's exit was orderly, proactive, and well-communicated. The peso fell 8% initially, then stabilized. Chile became the model for EM inflation targeting with free float — and avoided future crises.`,
+ chain:["Asian crisis hits copper prices","Capital outflows pressure CLP band","Central Bank chooses proactive exit","Band abandoned — CLP floats freely","Peso falls 8% in orderly fashion","Inflation targeting adopted — Chile model born"],
+ highlights:[{val:"1984",label:"Year Chile's band system began"},{val:"−8%",label:"Orderly CLP decline on float"},{val:"Sep 1999",label:"Proactive exit vs forced devaluation"},{val:"Best practice",label:"Chile became the EM floating rate model"}]},
+
+{id:"trump18",year:2018,date:"Jul 6, 2018",title:"US-China Trade War 1.0",ccy:"USD/CNY · AUD",channels:["trade","monetary"],
+ series:[{label:"USD/CNY",base:0.1512,shock:-0.012,vol:0.004,trend:-0.0001,revert:0.02},{label:"AUD/USD",base:0.740,shock:-0.018,vol:0.007,trend:-0.0001,revert:0.03}],
+ bg:`After months of escalating tariff threats, the US imposed 25% tariffs on $34bn of Chinese goods on July 6, 2018. China immediately retaliated with equal tariffs on US exports including soybeans, automobiles, and agriculture. The trade war escalated through 2018-19, with tariffs eventually covering $360bn of Chinese goods and $110bn of US goods.`,
+ what:`Unlike the sharp shock of Liberation Day, the 2018 trade war unfolded gradually — giving FX markets time to adjust. CNY fell 10% against USD over the next 6 months as China allowed depreciation to partially offset tariff cost increases. AUD and commodity currencies (Chile's CLP) fell as China's growth outlook dimmed. The key lesson: tariff wars produce gradual EM FX weakness and RMB depreciation as an offset.`,
+ chain:["$34bn US tariffs on China take effect","China retaliates immediately","PBoC allows CNY to weaken (offset tariffs)","Global growth expectations cut","AUD falls on China demand slowdown","Trade war escalates to $360bn over 18 months"],
+ highlights:[{val:"−10%",label:"CNY vs USD over 6 months"},{val:"$360bn",label:"Final US tariffs on Chinese goods"},{val:"7.18",label:"USD/CNY high — near psychologically key 7.0"},{val:"−8%",label:"AUD/USD by year-end 2018"}]},
+
+{id:"colombia22",year:2022,date:"Jun 30, 2022",title:"Banrep: LatAm's Most Aggressive Hike",ccy:"USD/COP",channels:["monetary","carry"],
+ series:[{label:"USD/COP",base:0.000245,shock:+0.015,vol:0.007,trend:-0.0002,revert:0.04}],
+ bg:`Colombia's inflation surged to 9.7% in mid-2022 driven by global commodity prices, peso weakness, and domestic demand. The Banco de la República (Banrep) had started hiking in September 2021. By mid-2022 it was deploying the most aggressive hiking cycle in the region — including a surprise 150bp hike in June 2022 that shocked markets expecting 100bp.`,
+ what:`The 150bp June hike sent COP sharply higher — one of the rare cases where a LatAm EM currency strengthened on a rate hike surprise. Banrep continued hiking to 13.25% by early 2023 — the highest rate in decades. COP became attractive for carry trades as real rates turned significantly positive. The episode illustrates how credible, aggressive monetary policy can defend and strengthen EM currencies even in a difficult global environment.`,
+ chain:["Inflation hits 9.7% in Colombia","Banrep surprises with 150bp hike (vs 100bp expected)","Real interest rates turn positive","COP carry trade attractiveness rises","Capital inflows increase","COP strengthens on policy credibility"],
+ highlights:[{val:"150bp",label:"Surprise hike in June 2022"},{val:"13.25%",label:"Banrep peak rate — highest in decades"},{val:"Real rates positive",label:"COP carry trade became attractive"},{val:"+8%",label:"COP vs USD after hike surprise"}]},
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// DATA GENERATION — Seeded random walk with event shock
+// ═══════════════════════════════════════════════════════════════════
+function seededRng(seed){
+  let s=seed>>>0;
+  return()=>{s=(Math.imul(1664525,s)+1013904223)>>>0;return s/4294967296;};
+}
+
+function genSeries(cfg,seed){
+  const {base,shock,vol,trend,revert}=cfg;
+  const rng=seededRng(seed);
+  const N=121,evDay=60;
+  const arr=[base];
+  for(let i=1;i<N;i++){
+    const prev=arr[i-1];
+    let chg;
+    if(i<evDay){
+      // pre-event: drift + noise
+      chg=prev*(trend/252)+prev*vol*(rng()-0.5)*2.2;
+    } else if(i===evDay){
+      // event shock (may span 1-2 days)
+      chg=prev*shock*0.75;
+    } else if(i===evDay+1){
+      chg=prev*shock*0.25+prev*vol*(rng()-0.5)*2.2;
+    } else {
+      // post: mean-reversion + noise
+      const target=arr[evDay]*(1+shock);
+      chg=revert*(target-prev)+prev*vol*(rng()-0.5)*2.2;
+    }
+    arr.push(prev+chg);
+  }
+  // Normalize to % change from event Day 0 (index 60) so all pairs are comparable
+  const base0 = arr[59];
+  return arr.map(v => (v / base0 - 1) * 100);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// BUILD UI
+// ═══════════════════════════════════════════════════════════════════
+const CHANNELS_ALL=[...new Set(EVENTS.flatMap(e=>e.channels))];
+let activeFilters=new Set();
+let animTimer=null,animFrame=0,animData=null,animSpeed=1;
+
+function buildFilterPills(){
+  const fp=document.getElementById("filter-pills");
+  CHANNELS_ALL.forEach(c=>{
+    const span=document.createElement("span");
+    span.className=`fpill ${CH[c].css}`;
+    span.textContent=`${CH[c].icon} ${CH[c].label}`;
+    span.onclick=()=>{
+      if(activeFilters.has(c)){activeFilters.delete(c);span.classList.remove("on");}
+      else{activeFilters.add(c);span.classList.add("on");}
+      filterEvents();
+    };
+    fp.appendChild(span);
+  });
+}
+
+function buildEventList(){
+  const el=document.getElementById("ev-list");
+  EVENTS.forEach(ev=>{
+    const d=document.createElement("div");
+    d.className="ev-item";
+    d.id=`evi-${ev.id}`;
+    d.innerHTML=`<div class="ei-year">${ev.date}</div><div class="ei-title">${ev.title}</div><div class="ei-ccy">${ev.ccy}</div>`;
+    d.onclick=()=>showEvent(ev.id);
+    el.appendChild(d);
+  });
+}
+
+function filterEvents(){
+  const q=document.getElementById("ev-search").value.toLowerCase();
+  EVENTS.forEach(ev=>{
+    const el=document.getElementById(`evi-${ev.id}`);
+    const matchQ=!q||ev.title.toLowerCase().includes(q)||String(ev.year).includes(q)||ev.ccy.toLowerCase().includes(q);
+    const matchF=activeFilters.size===0||ev.channels.some(c=>activeFilters.has(c));
+    el.style.display=(matchQ&&matchF)?'':'none';
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SHOW EVENT
+// ═══════════════════════════════════════════════════════════════════
+function showEvent(id){
+  const ev=EVENTS.find(e=>e.id===id);
+  document.querySelectorAll(".ev-item").forEach(e=>e.classList.remove("active"));
+  document.getElementById(`evi-${ev.id}`).classList.add("active");
+
+  const badges=ev.channels.map(c=>`<span class="badge ${CH[c].css}">${CH[c].icon} ${CH[c].label}</span>`).join("");
+  const hlCards=ev.highlights.map(h=>`<div class="hl-card"><div class="hl-val">${h.val}</div><div class="hl-label">${h.label}</div></div>`).join("");
+  const sdBoxes=ev.chain.map((s,i)=>`<span class="sd-box">${s}</span>${i<ev.chain.length-1?'<span class="sd-arr">→</span>':""}`).join("");
+
+  document.getElementById("content-inner").innerHTML=`
+    <div class="ev-header">
+      <div class="eh-date">${ev.date} &nbsp;·&nbsp; ${ev.ccy}</div>
+      <h2>${ev.title}</h2>
+      <div class="badge-row">${badges}</div>
+    </div>
+
+    <nav class="ctx-tabs">
+      <button class="ctx-tab active" onclick="ctxTab('bg',this)">📖 Background</button>
+      <button class="ctx-tab" onclick="ctxTab('what',this)">⚡ What Happened</button>
+      <button class="ctx-tab" onclick="ctxTab('chain',this)">🔗 S&amp;D Chain</button>
+    </nav>
+
+    <div id="ctx-bg" class="ctx-panel active">
+      <p class="section-h">Context &amp; Background</p>
+      <p class="body-text">${ev.bg}</p>
+      <div class="highlights">${hlCards}</div>
+    </div>
+    <div id="ctx-what" class="ctx-panel">
+      <p class="section-h">What Happened &amp; Market Impact</p>
+      <p class="body-text">${ev.what}</p>
+    </div>
+    <div id="ctx-chain" class="ctx-panel">
+      <p class="section-h">Supply &amp; Demand Transmission Chain</p>
+      <div class="sd-chain">${sdBoxes}</div>
+    </div>
+
+    <div class="chart-area">
+      <div class="chart-controls">
+        <button class="ctrl-btn" id="play-btn" onclick="playAnim()">▶ Play (20s)</button>
+        <button class="ctrl-btn pause" onclick="resetAnim()">↺ Reset</button>
+        <select class="speed-sel" onchange="setSpeed(this.value)">
+          <option value="1">1× speed</option>
+          <option value="2">2× speed</option>
+          <option value="0.5">0.5× speed</option>
+        </select>
+        <div class="progress-bar"><div class="progress-fill" id="prog-fill"></div></div>
+        <span class="chart-label" id="day-label">Day −60</span>
+      </div>
+      <div id="anim-chart"></div>
+      <div id="chart-note" class="chart-note"></div>
+    </div>`;
+
+  stopAnim();
+  prepareAnim(ev);
+  initChart(ev);
+}
+
+function ctxTab(name,btn){
+  document.querySelectorAll(".ctx-panel").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".ctx-tab").forEach(t=>t.classList.remove("active"));
+  document.getElementById(`ctx-${name}`).classList.add("active");
+  btn.classList.add("active");
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ANIMATION
+// ═══════════════════════════════════════════════════════════════════
+const DAYS=Array.from({length:121},(_,i)=>i-60);
+
+function prepareAnim(ev){
+  animData=ev.series.map((s,si)=>({
+    series:s,
+    values:genSeries(s,ev.year*100+si*37+si)
+  }));
+  animFrame=0;
+}
+
+function initChart(ev){
+  const colors=["#2563eb","#d97706","#22c55e","#8b5cf6"];
+  const traces=animData.map((d,i)=>({
+    x:[DAYS[0]],y:[d.values[0]],
+    mode:"lines",name:d.series.label,
+    line:{color:colors[i%colors.length],width:2.5}
+  }));
+  // Event marker shape
+  const shapes=[
+    {type:"line",x0:0,x1:0,y0:0,y1:1,xref:"x",yref:"paper",
+     line:{color:"#ef4444",width:1.5,dash:"dot"}},
+    {type:"rect",x0:-60,x1:0,y0:0,y1:1,xref:"x",yref:"paper",
+     fillcolor:"#2563eb08",line:{width:0}},
+    {type:"rect",x0:0,x1:60,y0:0,y1:1,xref:"x",yref:"paper",
+     fillcolor:"#d9780608",line:{width:0}},
+  ];
+  const annotations=[
+    {x:0,y:1.04,xref:"x",yref:"paper",text:"Event Day 0",showarrow:false,
+     font:{color:"#ef4444",size:11},xanchor:"center"},
+    {x:-30,y:1.04,xref:"x",yref:"paper",text:"← Before",showarrow:false,
+     font:{color:"#60a5fa",size:10},xanchor:"center"},
+    {x:30,y:1.04,xref:"x",yref:"paper",text:"After →",showarrow:false,
+     font:{color:"#fbbf24",size:10},xanchor:"center"},
+  ];
+  Plotly.newPlot("anim-chart",traces,{
+    paper_bgcolor:"#0f172a",plot_bgcolor:"#1e293b",font:{color:"#f1f5f9"},
+    height:320,
+    xaxis:{gridcolor:"#334155",zerolinecolor:"#475569",title:{text:"Days relative to event",font:{color:"#94a3b8",size:11}},range:[-62,62]},
+    yaxis:{gridcolor:"#334155",title:{text:"% Change from Event Day 0",font:{color:"#94a3b8",size:11}},ticksuffix:"%",tickformat:".1f",zeroline:true,zerolinecolor:"#ef444466",zerolinewidth:1},
+    legend:{bgcolor:"#1e293b",orientation:"h",y:-0.22},
+    shapes,annotations,
+    margin:{l:65,r:20,t:38,b:60}
+  },{responsive:true,displayModeBar:false});
+
+  // Reading guide below chart
+  const noteEl = document.getElementById("chart-note");
+  if(noteEl && ev && ev.ccy){
+    const pairs = ev.ccy.split(/[·,]+/).map(s=>s.trim()).filter(Boolean);
+    const lines = pairs.map(p=>{
+      if(/^USD\//.test(p)) return `<b>${p}</b>: rising line = <span class='note-up'>USD strengthens</span> / ${p.split('/')[1]} weakens`;
+      if(/\/USD$/.test(p)) return `<b>${p}</b>: rising line = <span class='note-up'>${p.split('/')[0]} strengthens</span> / USD weakens`;
+      if(/^EUR\/CHF/.test(p)) return `<b>${p}</b>: rising line = <span class='note-up'>EUR strengthens</span> / CHF weakens`;
+      return `<b>${p}</b>: rising = first currency strengthens vs second`;
+    });
+    noteEl.innerHTML = `<span class="note-icon">📖 How to read:</span> ` + lines.join(' &nbsp;·&nbsp; ');
+  }
+}
+
+function playAnim(){
+  if(animTimer) return;
+  if(animFrame>=120){animFrame=0;resetAnimChart();}
+  const totalMs=20000/animSpeed;
+  const stepMs=totalMs/120;
+  document.getElementById("play-btn").textContent="⏸ Playing…";
+  document.getElementById("play-btn").classList.add("pause");
+  animTimer=setInterval(()=>{
+    animFrame++;
+    const xArr=animData.map(d=>DAYS.slice(0,animFrame+1));
+    const yArr=animData.map(d=>d.values.slice(0,animFrame+1));
+    animData.forEach((d,i)=>{
+      Plotly.extendTraces("anim-chart",{x:[xArr[i]],y:[yArr[i]]},[i],animFrame+1);
+    });
+    const pct=((animFrame)/120*100).toFixed(0);
+    document.getElementById("prog-fill").style.width=pct+"%";
+    document.getElementById("day-label").textContent=`Day ${DAYS[animFrame]>=0?"+":""}${DAYS[animFrame]}`;
+    if(animFrame>=120){
+      stopAnim();
+      document.getElementById("play-btn").textContent="▶ Play (20s)";
+      document.getElementById("play-btn").classList.remove("pause");
+    }
+  },stepMs);
+}
+
+function stopAnim(){
+  if(animTimer){clearInterval(animTimer);animTimer=null;}
+  const btn=document.getElementById("play-btn");
+  if(btn){btn.textContent="▶ Play (20s)";btn.classList.remove("pause");}
+}
+
+function resetAnim(){
+  stopAnim();
+  animFrame=0;
+  const pf=document.getElementById("prog-fill");
+  const dl=document.getElementById("day-label");
+  if(pf) pf.style.width="0%";
+  if(dl) dl.textContent="Day −60";
+  resetAnimChart();
+}
+
+function resetAnimChart(){
+  if(!animData) return;
+  const update={x:animData.map(()=>[DAYS[0]]),y:animData.map(d=>[d.values[0]])};
+  const indices=animData.map((_,i)=>i);
+  // Redraw from scratch
+  initChart({series:animData.map(d=>d.series)});
+}
+
+function setSpeed(v){animSpeed=parseFloat(v);}
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
+buildFilterPills();
+buildEventList();
+</script>
+</body>
+</html>
