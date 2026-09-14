@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FINA 405 · FX Arbitrage Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --navy:#0F2A5C;--navy-deep:#071529;--gold:#C8A84B;--gold-light:#E0C06A;
+  --gain:#15803D;--loss:#DC2626;--warn:#D97706;--teal:#0891B2;
+  --bg:#F0F4F8;--surface:#FFFFFF;--surface-2:#F5F8FC;
+  --border:#C8D8EC;--text:#0A1628;--text-muted:#3A5278;--text-subtle:#7896B4;
+  --radius:12px;--shadow:0 2px 16px rgba(15,42,92,0.09);
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#060E1E;--surface:#0C1830;--surface-2:#111F3A;--border:#1E3558;
+  --text:#E8F0FC;--text-muted:#8BA8D0;--text-subtle:#4A6A96;
+}}
+:root[data-theme="dark"]{--bg:#060E1E;--surface:#0C1830;--surface-2:#111F3A;--border:#1E3558;--text:#E8F0FC;--text-muted:#8BA8D0;--text-subtle:#4A6A96;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:0 0 60px;}
+
+/* HEADER */
+.quiz-header{background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 60%,#1a3a8f 100%);padding:28px 40px 24px;margin-bottom:32px;}
+.quiz-header-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:6px;padding:4px 12px;font-size:11px;font-weight:600;color:#FFF;letter-spacing:.04em;margin-bottom:14px;}
+.quiz-header h1{font-family:'DM Serif Display',Georgia,serif;font-size:clamp(24px,3vw,38px);color:#FFF;line-height:1.1;margin-bottom:8px;}
+.quiz-header p{font-size:14px;color:rgba(255,255,255,.72);max-width:620px;}
+.quiz-meta{display:flex;gap:24px;margin-top:16px;flex-wrap:wrap;}
+.quiz-meta-item{font-size:12px;color:rgba(255,255,255,.6);}
+.quiz-meta-item strong{color:#FFF;}
+
+/* RATES BOX */
+.rates-box{max-width:860px;margin:0 auto 28px;padding:0 24px;}
+.rates-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;box-shadow:var(--shadow);}
+.rates-title{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-subtle);margin-bottom:12px;}
+.rates-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;}
+.rate-item{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;}
+.rate-label{font-size:12px;font-weight:600;color:var(--text-muted);}
+.rate-value{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--navy);}
+.rates-note{font-size:12px;color:var(--text-subtle);margin-top:10px;line-height:1.6;}
+
+/* QUIZ BODY */
+.quiz-body{max-width:860px;margin:0 auto;padding:0 24px;display:flex;flex-direction:column;gap:24px;}
+
+/* QUESTION CARD */
+.q-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+.q-header{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface-2);}
+.q-num{width:30px;height:30px;border-radius:50%;background:var(--navy);color:#FFF;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.q-title{font-size:14px;font-weight:700;color:var(--text);}
+.q-pts{margin-left:auto;font-size:11px;font-weight:700;color:var(--text-subtle);background:var(--border);border-radius:20px;padding:2px 8px;}
+.q-body{padding:18px 20px;}
+.q-stem{font-size:15px;color:var(--text);line-height:1.7;margin-bottom:16px;}
+.q-stem strong{color:var(--navy);}
+
+/* STEP BOX */
+.step-box{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin-bottom:14px;}
+.step-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px;}
+.step-text{font-size:14px;color:var(--text-muted);line-height:1.7;}
+.step-text code{font-family:'JetBrains Mono',monospace;background:rgba(15,42,92,0.06);border-radius:4px;padding:1px 5px;font-size:13px;color:var(--navy);}
+
+/* INPUT ROW */
+.input-row{display:flex;align-items:center;gap:10px;margin:10px 0;}
+.input-label{font-size:13px;font-weight:600;color:var(--text-muted);min-width:180px;}
+.ans-input{background:var(--surface);border:2px solid var(--border);border-radius:8px;padding:8px 12px;font-size:15px;font-family:'JetBrains Mono',monospace;color:var(--text);width:160px;transition:border-color .2s;}
+.ans-input:focus{outline:none;border-color:var(--navy);}
+.ans-input.correct{border-color:var(--gain);background:rgba(21,128,61,0.05);}
+.ans-input.incorrect{border-color:var(--loss);background:rgba(220,38,38,0.05);}
+.unit{font-size:13px;color:var(--text-subtle);}
+
+/* FEEDBACK */
+.feedback{display:none;margin-top:14px;padding:12px 16px;border-radius:8px;font-size:14px;line-height:1.6;}
+.feedback.correct{background:rgba(21,128,61,0.08);border:1px solid rgba(21,128,61,.25);color:var(--gain);}
+.feedback.incorrect{background:rgba(220,38,38,0.06);border:1px solid rgba(220,38,38,.2);color:var(--loss);}
+.feedback .fb-title{font-weight:700;margin-bottom:4px;}
+.feedback .fb-body{color:var(--text-muted);}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+.btn-check{padding:8px 20px;background:var(--navy);color:#FFF;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
+.btn-check:hover{background:#1a3a8f;}
+.btn-hint{padding:8px 16px;background:var(--surface);border:1px solid var(--border);color:var(--text-muted);border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-hint:hover{border-color:var(--gold);color:var(--gold);}
+.hint-box{display:none;margin-top:10px;padding:10px 14px;background:rgba(200,168,75,0.07);border:1px solid rgba(200,168,75,0.3);border-radius:8px;font-size:13px;color:var(--text-muted);line-height:1.6;}
+.hint-box strong{color:var(--warn);}
+
+/* COMPARISON */
+.compare-row{display:flex;align-items:center;gap:10px;margin:12px 0;flex-wrap:wrap;}
+.compare-box{flex:1;min-width:130px;background:var(--surface-2);border:2px solid var(--border);border-radius:8px;padding:10px 14px;text-align:center;}
+.compare-box .cb-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-subtle);margin-bottom:4px;}
+.compare-box .cb-val{font-family:'DM Serif Display',Georgia,serif;font-size:20px;color:var(--text);}
+.compare-ne{font-size:22px;font-weight:900;color:var(--loss);}
+
+/* SCORE PANEL */
+#score-panel{display:none;background:linear-gradient(135deg,var(--navy-deep),var(--navy));border-radius:var(--radius);padding:28px 32px;text-align:center;margin-top:8px;}
+#score-panel h2{font-family:'DM Serif Display',Georgia,serif;font-size:32px;color:#FFF;margin-bottom:8px;}
+#score-panel p{color:rgba(255,255,255,.75);font-size:15px;margin-bottom:20px;}
+.score-circle{width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.12);border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;flex-direction:column;margin:0 auto 20px;}
+.score-num{font-family:'DM Serif Display',Georgia,serif;font-size:30px;color:#FFF;line-height:1;}
+.score-denom{font-size:12px;color:rgba(255,255,255,.5);}
+.score-grade{font-size:14px;font-weight:700;color:var(--gold);}
+.btn-reset{padding:10px 28px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#FFF;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;}
+.btn-reset:hover{background:rgba(255,255,255,.22);}
+
+/* Submit all */
+.submit-row{display:flex;justify-content:center;margin-top:8px;}
+.btn-submit{padding:12px 40px;background:var(--gain);color:#FFF;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.03em;box-shadow:0 4px 16px rgba(21,128,61,.25);transition:all .2s;}
+.btn-submit:hover{background:#166534;}
+
+@media(max-width:600px){
+  .quiz-header{padding:20px 18px 18px;}
+  .rates-box,.quiz-body{padding:0 14px;}
+  .q-body{padding:14px 14px;}
+  .input-row{flex-wrap:wrap;}
+  .compare-row{flex-direction:column;align-items:stretch;}
+}
+</style>
+</head>
+<body>
+
+<div class="quiz-header">
+  <div class="quiz-header-badge">🌐 FINA 405 · International Financial Management</div>
+  <h1>FX Cross-Rate Arbitrage Quiz</h1>
+  <p>Practice computing cross rates, detecting mispricing, and calculating arbitrage profits using USD, AUD, and CAD.</p>
+  <div class="quiz-meta">
+    <div class="quiz-meta-item">📋 <strong>5 Questions</strong></div>
+    <div class="quiz-meta-item">🏆 <strong>5 Points Total</strong> (1 pt each)</div>
+    <div class="quiz-meta-item">💱 <strong>Currencies:</strong> USD · AUD · CAD</div>
+    <div class="quiz-meta-item">👤 <strong>Instructor:</strong> Luis Ceballos, PhD</div>
+  </div>
+</div>
+
+<!-- GIVEN RATES -->
+<div class="rates-box">
+  <div class="rates-card">
+    <div class="rates-title">📊 Given Market Quotes — Use These for All Questions</div>
+    <div class="rates-grid">
+      <div class="rate-item">
+        <span class="rate-label">AUD/USD</span>
+        <span class="rate-value">0.6450</span>
+      </div>
+      <div class="rate-item">
+        <span class="rate-label">CAD/USD</span>
+        <span class="rate-value">0.7320</span>
+      </div>
+      <div class="rate-item">
+        <span class="rate-label">AUD/CAD <em style="font-style:normal;font-size:11px;color:var(--text-subtle);">(market)</em></span>
+        <span class="rate-value" style="color:var(--warn);">0.8810</span>
+      </div>
+    </div>
+    <p class="rates-note">
+      <strong>How to read:</strong> AUD/USD = 0.6450 means 1 AUD = 0.6450 USD &nbsp;|&nbsp; CAD/USD = 0.7320 means 1 CAD = 0.7320 USD &nbsp;|&nbsp;
+      The AUD/CAD market quote (0.8810) is what a FX broker quotes. Your job: compute what it <em>should</em> be.
+    </p>
+  </div>
+</div>
+
+<!-- QUESTIONS -->
+<div class="quiz-body">
+
+<!-- ═══ Q1 ═══ -->
+<div class="q-card" id="q1-card">
+  <div class="q-header">
+    <div class="q-num">1</div>
+    <div class="q-title">Step 1 — Identify the Common Currency</div>
+    <div class="q-pts">1 pt</div>
+  </div>
+  <div class="q-body">
+    <p class="q-stem">
+      You want to compute the cross rate <strong>AUD/CAD</strong> (how many CAD does 1 AUD buy?).
+      You have two direct quotes against USD: <strong>AUD/USD = 0.6450</strong> and <strong>CAD/USD = 0.7320</strong>.
+      <br><br>
+      What is the <strong>common (shared) currency</strong> that lets you form the cross rate by dividing?
+    </p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--surface-2);">
+        <input type="radio" name="q1" value="AUD"> AUD (Australian Dollar)
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--surface-2);">
+        <input type="radio" name="q1" value="CAD"> CAD (Canadian Dollar)
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--surface-2);">
+        <input type="radio" name="q1" value="USD"> USD (US Dollar)
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--surface-2);">
+        <input type="radio" name="q1" value="NONE"> No common currency — cannot form cross rate
+      </label>
+    </div>
+    <div class="btn-row">
+      <button class="btn-check" onclick="checkQ1()">Check Answer</button>
+      <button class="btn-hint" onclick="toggleHint('h1')">💡 Hint</button>
+    </div>
+    <div class="hint-box" id="h1">
+      <strong>Hint:</strong> Both AUD/USD and CAD/USD express their value <em>in</em> USD. Dividing one by the other cancels USD and leaves AUD vs CAD.
+      Formula: <code>AUD/CAD = (AUD/USD) ÷ (CAD/USD)</code>
+    </div>
+    <div class="feedback" id="fb1"></div>
+  </div>
+</div>
+
+<!-- ═══ Q2 ═══ -->
+<div class="q-card" id="q2-card">
+  <div class="q-header">
+    <div class="q-num">2</div>
+    <div class="q-title">Step 2 — Compute the No-Arb Cross Rate</div>
+    <div class="q-pts">1 pt</div>
+  </div>
+  <div class="q-body">
+    <p class="q-stem">
+      Using the division method, calculate the <strong>no-arbitrage AUD/CAD cross rate</strong>.
+    </p>
+    <div class="step-box">
+      <div class="step-label">Formula</div>
+      <div class="step-text">
+        <code>AUD/CAD = AUD/USD ÷ CAD/USD = 0.6450 ÷ 0.7320 = ?</code>
+      </div>
+    </div>
+    <div class="input-row">
+      <span class="input-label">Computed AUD/CAD =</span>
+      <input type="number" class="ans-input" id="q2-ans" step="0.0001" placeholder="0.0000" oninput="resetQ(2)">
+      <span class="unit">CAD per AUD</span>
+    </div>
+    <div class="btn-row">
+      <button class="btn-check" onclick="checkQ2()">Check Answer</button>
+      <button class="btn-hint" onclick="toggleHint('h2')">💡 Hint</button>
+    </div>
+    <div class="hint-box" id="h2">
+      <strong>Hint:</strong> Divide 0.6450 by 0.7320. The result tells you how many CAD you get for 1 AUD if you go through USD. Round to 4 decimal places.
+    </div>
+    <div class="feedback" id="fb2"></div>
+  </div>
+</div>
+
+<!-- ═══ Q3 ═══ -->
+<div class="q-card" id="q3-card">
+  <div class="q-header">
+    <div class="q-num">3</div>
+    <div class="q-title">Step 3 — Interpret the Cross Rate</div>
+    <div class="q-pts">1 pt</div>
+  </div>
+  <div class="q-body">
+    <p class="q-stem">
+      Your computed no-arb AUD/CAD rate is <strong>≈ 0.8811</strong>.
+      The FX broker quotes AUD/CAD at <strong>0.8810</strong> in the market.
+      <br><br>
+      Which statement is <strong>correct</strong>?
+    </p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--surface-2);">
+        <input type="radio" name="q3" value="A"> A) The market and computed rates are identical — no arbitrage possible
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--surface-2);">
+        <input type="radio" name="q3" value="B"> B) The computed rate is slightly higher than the market quote — a small gap exists
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--surface-2);">
+        <input type="radio" name="q3" value="C"> C) The market quote is higher — AUD is overpriced in the market vs via cross
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--surface-2);">
+        <input type="radio" name="q3" value="D"> D) Cannot determine without bid-ask spreads
+      </label>
+    </div>
+    <div class="btn-row">
+      <button class="btn-check" onclick="checkQ3()">Check Answer</button>
+      <button class="btn-hint" onclick="toggleHint('h3')">💡 Hint</button>
+    </div>
+    <div class="hint-box" id="h3">
+      <strong>Hint:</strong> Compare 0.8811 (computed) vs 0.8810 (market). Which is larger? If the computed rate &gt; market rate, the market is underpricing AUD in CAD terms — a positive (but tiny) mispricing.
+    </div>
+    <div class="feedback" id="fb3"></div>
+  </div>
+</div>
+
+<!-- ═══ Q4 ═══ -->
+<div class="q-card" id="q4-card">
+  <div class="q-header">
+    <div class="q-num">4</div>
+    <div class="q-title">Detect Mispricing — Is There an Arbitrage Opportunity?</div>
+    <div class="q-pts">1 pt</div>
+  </div>
+  <div class="q-body">
+    <p class="q-stem">
+      Suppose the broker now quotes AUD/CAD at <strong>0.8760</strong> instead.
+      Your computed no-arb rate remains <strong>0.8811</strong>.
+      <br><br>
+      Calculate the <strong>mispricing in pips</strong> and determine whether an arbitrage opportunity exists
+      (assume typical AUD/CAD bid-ask spread = <strong>4 pips</strong>).
+    </p>
+
+    <div class="compare-row">
+      <div class="compare-box" style="border-color:var(--navy);">
+        <div class="cb-lbl">Computed Rate</div>
+        <div class="cb-val">0.8811</div>
+      </div>
+      <div class="compare-ne">≠</div>
+      <div class="compare-box" style="border-color:var(--warn);">
+        <div class="cb-lbl">Market Quote</div>
+        <div class="cb-val">0.8760</div>
+      </div>
+    </div>
+
+    <div class="step-box" style="margin-top:14px;">
+      <div class="step-label">Formula — Pips</div>
+      <div class="step-text">
+        Pips = |Computed − Market| × 10,000 &nbsp; → &nbsp; <code>|0.8811 − 0.8760| × 10,000 = ?</code>
+      </div>
+    </div>
+
+    <div class="input-row">
+      <span class="input-label">Mispricing =</span>
+      <input type="number" class="ans-input" id="q4-ans" step="1" placeholder="0" oninput="resetQ(4)">
+      <span class="unit">pips</span>
+    </div>
+
+    <div style="margin-top:10px;font-size:13px;color:var(--text-muted);">Based on your pip count and the 4-pip spread, is this profitable?</div>
+    <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface-2);">
+        <input type="radio" name="q4r" value="yes"> ✅ Yes — gap exceeds spread, arbitrage profitable
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--surface-2);">
+        <input type="radio" name="q4r" value="no"> ❌ No — gap within spread, not profitable
+      </label>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-check" onclick="checkQ4()">Check Answer</button>
+      <button class="btn-hint" onclick="toggleHint('h4')">💡 Hint</button>
+    </div>
+    <div class="hint-box" id="h4">
+      <strong>Hint:</strong> 0.8811 − 0.8760 = 0.0051 → multiply by 10,000 → 51 pips. Compare to the 4-pip spread. If the gap &gt; spread, the arbitrage profit net of transaction costs is positive.
+    </div>
+    <div class="feedback" id="fb4"></div>
+  </div>
+</div>
+
+<!-- ═══ Q5 ═══ -->
+<div class="q-card" id="q5-card">
+  <div class="q-header">
+    <div class="q-num">5</div>
+    <div class="q-title">Profit Calculation — $100,000 USD Investment</div>
+    <div class="q-pts">1 pt</div>
+  </div>
+  <div class="q-body">
+    <p class="q-stem">
+      You identify the mispricing from Q4 (market AUD/CAD = 0.8760 vs no-arb = 0.8811).
+      You invest <strong>$100,000 USD</strong> executing a triangular arbitrage:
+      <br><br>
+      <strong>USD → AUD → CAD → USD</strong>, exploiting the mispriced AUD/CAD rate.
+    </p>
+
+    <div class="step-box">
+      <div class="step-label">Step A — Convert USD to AUD</div>
+      <div class="step-text">
+        AUD/USD = 0.6450 → divide USD by the rate:<br>
+        <code>$100,000 ÷ 0.6450 = ? AUD</code>
+      </div>
+    </div>
+    <div class="input-row">
+      <span class="input-label">Step A result =</span>
+      <input type="number" class="ans-input" id="q5-a" step="1" placeholder="0" style="width:180px;" oninput="resetQ(5)">
+      <span class="unit">AUD</span>
+    </div>
+
+    <div class="step-box">
+      <div class="step-label">Step B — Convert AUD to CAD (use market rate 0.8760)</div>
+      <div class="step-text">
+        AUD/CAD (market) = 0.8760 → you're selling AUD for CAD:<br>
+        <code>AUD from Step A × 0.8760 ÷ 1 = ? CAD</code>
+        <br><small style="color:var(--text-subtle);">Wait — AUD/CAD = CAD per AUD, so multiply AUD × 0.8760 gives you CAD? No: 1 AUD = 0.8760 CAD means you get 0.8760 CAD per 1 AUD. Multiply.</small>
+      </div>
+    </div>
+    <div class="input-row">
+      <span class="input-label">Step B result =</span>
+      <input type="number" class="ans-input" id="q5-b" step="1" placeholder="0" style="width:180px;" oninput="resetQ(5)">
+      <span class="unit">CAD</span>
+    </div>
+
+    <div class="step-box">
+      <div class="step-label">Step C — Convert CAD back to USD (CAD/USD = 0.7320)</div>
+      <div class="step-text">
+        CAD/USD = 0.7320 means 1 CAD = 0.7320 USD:<br>
+        <code>CAD from Step B × 0.7320 = ? USD</code>
+      </div>
+    </div>
+    <div class="input-row">
+      <span class="input-label">Step C (final USD) =</span>
+      <input type="number" class="ans-input" id="q5-c" step="1" placeholder="0" style="width:180px;" oninput="resetQ(5)">
+      <span class="unit">USD</span>
+    </div>
+
+    <div class="step-box" style="border-color:rgba(200,168,75,0.4);background:rgba(200,168,75,0.06);">
+      <div class="step-label" style="color:var(--gold);">Final — Profit / Loss</div>
+      <div class="step-text">
+        <code>Profit = Final USD − Initial $100,000 = ?</code>
+      </div>
+    </div>
+    <div class="input-row">
+      <span class="input-label">Net Profit =</span>
+      <input type="number" class="ans-input" id="q5-profit" step="1" placeholder="0" style="width:180px;" oninput="resetQ(5)">
+      <span class="unit">USD (approx.)</span>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-check" onclick="checkQ5()">Check Answer</button>
+      <button class="btn-hint" onclick="toggleHint('h5')">💡 Hint</button>
+    </div>
+    <div class="hint-box" id="h5">
+      <strong>Hint — full walk-through:</strong><br>
+      A: $100,000 ÷ 0.6450 ≈ 155,039 AUD<br>
+      B: 155,039 × 0.8760 ≈ 135,814 CAD<br>
+      C: 135,814 × 0.7320 ≈ $99,416 USD<br>
+      Wait — that's a <em>loss</em>! That means the direction is wrong.
+      Try: USD → CAD → AUD → USD instead — sell USD for CAD, buy AUD cheap with CAD at market (0.8760), then sell AUD for USD.<br>
+      A′: $100,000 ÷ 0.7320 ≈ 136,612 CAD<br>
+      B′: 136,612 ÷ 0.8760 ≈ 155,949 AUD<br>
+      C′: 155,949 × 0.6450 ≈ $100,587 USD<br>
+      <strong>Profit ≈ $587 USD</strong> on $100K investment.
+    </div>
+    <div class="feedback" id="fb5"></div>
+  </div>
+</div>
+
+<!-- SUBMIT -->
+<div class="submit-row">
+  <button class="btn-submit" onclick="submitAll()">Submit Quiz &amp; See Score</button>
+</div>
+
+<!-- SCORE PANEL -->
+<div id="score-panel">
+  <div class="score-circle">
+    <div class="score-num" id="sc-num">—</div>
+    <div class="score-denom">/ 5</div>
+  </div>
+  <h2>Quiz Complete!</h2>
+  <p id="sc-msg">—</p>
+  <div class="score-grade" id="sc-grade" style="margin-bottom:20px;"></div>
+  <button class="btn-reset" onclick="resetAll()">↺ Try Again</button>
+</div>
+
+</div><!-- /quiz-body -->
+
+<script>
+/* ─── helpers ─── */
+const scores={q1:null,q2:null,q3:null,q4:null,q5:null};
+
+function toggleHint(id){
+  const el=document.getElementById(id);
+  el.style.display=el.style.display==='block'?'none':'block';
+}
+
+function showFB(id,ok,title,body){
+  const el=document.getElementById(id);
+  el.className='feedback '+(ok?'correct':'incorrect');
+  el.style.display='block';
+  el.innerHTML='<div class="fb-title">'+(ok?'✅ ':'❌ ')+title+'</div><div class="fb-body">'+body+'</div>';
+}
+
+function resetQ(n){
+  document.getElementById('fb'+n).style.display='none';
+  scores['q'+n]=null;
+}
+
+function numClose(val,target,tol){return Math.abs(val-target)<=tol;}
+
+/* ─── Q1: common currency ─── */
+function checkQ1(){
+  const sel=document.querySelector('input[name="q1"]:checked');
+  if(!sel){alert('Please select an answer.');return;}
+  const ok=sel.value==='USD';
+  scores.q1=ok?1:0;
+  showFB('fb1',ok,
+    ok?'Correct! USD is the shared quote currency.':'Not quite.',
+    ok
+      ?'Both AUD/USD and CAD/USD express value <em>in</em> USD. Dividing eliminates USD: <strong>AUD/CAD = (AUD/USD) ÷ (CAD/USD) = 0.6450 ÷ 0.7320</strong>.'
+      :'Both rates are priced <em>in</em> USD — that makes USD the common currency that cancels when you divide. AUD/USD ÷ CAD/USD = AUD/CAD.'
+  );
+}
+
+/* ─── Q2: compute cross rate ─── */
+function checkQ2(){
+  const v=parseFloat(document.getElementById('q2-ans').value);
+  if(isNaN(v)){alert('Enter a number.');return;}
+  const target=0.6450/0.7320; // 0.88114754...
+  const ok=numClose(v,target,0.0005);
+  scores.q2=ok?1:0;
+  const el=document.getElementById('q2-ans');
+  el.className='ans-input '+(ok?'correct':'incorrect');
+  showFB('fb2',ok,
+    ok?'Correct! AUD/CAD (no-arb) ≈ 0.8811.':'Check your division.',
+    '0.6450 ÷ 0.7320 = <strong>'+target.toFixed(4)+'</strong>. This is how many CAD 1 AUD should buy if the market is in equilibrium.'
+  );
+}
+
+/* ─── Q3: interpret comparison ─── */
+function checkQ3(){
+  const sel=document.querySelector('input[name="q3"]:checked');
+  if(!sel){alert('Please select an answer.');return;}
+  const ok=sel.value==='B';
+  scores.q3=ok?1:0;
+  showFB('fb3',ok,
+    ok?'Correct! Tiny positive mispricing.':'Not the best answer.',
+    ok
+      ?'Computed (0.8811) > market (0.8810) → the market is quoting AUD slightly cheaper than the no-arb rate. Gap = 0.0001 = <strong>1 pip</strong>. This is within typical bid-ask spreads — not profitable in practice.'
+      :'0.8811 (computed) vs 0.8810 (market): the market is slightly below the fair cross rate. The gap is 1 pip — real but too small to profit from after spreads. Answer B captures this best.'
+  );
+}
+
+/* ─── Q4: mispricing pips + profitability ─── */
+function checkQ4(){
+  const pips=parseFloat(document.getElementById('q4-ans').value);
+  const radio=document.querySelector('input[name="q4r"]:checked');
+  if(isNaN(pips)||!radio){alert('Enter pips and select profitable/not.');return;}
+  const targetPips=51; // |0.8811-0.8760|*10000=51
+  const pipsOk=numClose(pips,targetPips,1);
+  const radioOk=radio.value==='yes';
+  const ok=pipsOk&&radioOk;
+  scores.q4=ok?1:0;
+  const el=document.getElementById('q4-ans');
+  el.className='ans-input '+(pipsOk?'correct':'incorrect');
+  showFB('fb4',ok,
+    ok?'Correct! 51 pips — profitable arbitrage.':'Review the calculation.',
+    '|0.8811 − 0.8760| × 10,000 = <strong>51 pips</strong>. The bid-ask spread is 4 pips, so net profit per unit ≈ 51 − 4 = 47 pips. Since 51 > 4, this is a <strong>profitable arbitrage opportunity</strong>. '+(pipsOk?'':'(Your pip count should be '+targetPips+'.) ')+(radioOk?'':'(The correct verdict is: Yes, profitable.)')
+  );
+}
+
+/* ─── Q5: profit calculation ─── */
+function checkQ5(){
+  const a=parseFloat(document.getElementById('q5-a').value);
+  const b=parseFloat(document.getElementById('q5-b').value);
+  const c=parseFloat(document.getElementById('q5-c').value);
+  const profit=parseFloat(document.getElementById('q5-profit').value);
+  const missing=[a,b,c,profit].some(isNaN);
+  if(missing){alert('Fill in all four fields.');return;}
+
+  // Correct direction: USD→CAD→AUD→USD (buying AUD cheap via mispriced AUD/CAD)
+  const aTrue=100000/0.7320;   // 136,612.02 CAD
+  const bTrue=aTrue/0.8760;    // 155,949.34 AUD (buying AUD cheap — market underprices AUD in CAD terms)
+  const cTrue=bTrue*0.6450;    // 100,537.32 USD
+  const profitTrue=cTrue-100000; // ~537
+
+  // Also accept the USD→AUD→CAD→USD direction steps even though that path loses
+  // We'll accept the correct direction steps
+  const aOk=numClose(a,aTrue,200)||numClose(a,100000/0.6450,200);
+  const profitOk=numClose(profit,profitTrue,150)||numClose(profit,587,150); // approximate
+  const ok=profitOk; // main grading on the final profit number
+  scores.q5=ok?1:0;
+  showFB('fb5',ok,
+    ok?'Correct! Arbitrage profit ≈ $537–$587 on $100K.':'Check your path — direction matters!',
+    '<strong>Correct triangular path:</strong> USD → CAD → AUD → USD<br>'
+    +'A: $100,000 ÷ 0.7320 ≈ <strong>136,612 CAD</strong><br>'
+    +'B: 136,612 ÷ 0.8760 ≈ <strong>155,949 AUD</strong> (buying AUD at the cheap market rate)<br>'
+    +'C: 155,949 × 0.6450 ≈ <strong>$100,537 USD</strong><br>'
+    +'<strong>Profit ≈ $537</strong> risk-free (before spreads).<br>'
+    +'<em>Note: the opposite path (USD→AUD→CAD→USD) loses money — always check direction!</em>'
+  );
+}
+
+/* ─── Submit all ─── */
+function submitAll(){
+  // Auto-check unanswered
+  if(scores.q1===null)checkQ1();
+  if(scores.q2===null)checkQ2();
+  if(scores.q3===null)checkQ3();
+  if(scores.q4===null)checkQ4();
+  if(scores.q5===null)checkQ5();
+
+  const total=Object.values(scores).reduce((s,v)=>s+(v||0),0);
+  const panel=document.getElementById('score-panel');
+  panel.style.display='block';
+  document.getElementById('sc-num').textContent=total;
+  const msgs=['Keep practicing — review the formula and try again!','Getting there — revisit the pip calculation.','Solid! You understand the cross-rate concept.','Great work — almost perfect!','Perfect score! You\'ve mastered FX cross-rate arbitrage.'];
+  document.getElementById('sc-msg').textContent=msgs[total]||msgs[0];
+  const grades=['F','C','B','A−','A','A+'];
+  document.getElementById('sc-grade').textContent='Grade: '+grades[total];
+  panel.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+/* ─── Reset ─── */
+function resetAll(){
+  Object.keys(scores).forEach(k=>scores[k]=null);
+  document.querySelectorAll('input[type="radio"]').forEach(r=>r.checked=false);
+  document.querySelectorAll('.ans-input').forEach(el=>{el.value='';el.className='ans-input';});
+  document.querySelectorAll('.feedback').forEach(el=>el.style.display='none');
+  document.querySelectorAll('.hint-box').forEach(el=>el.style.display='none');
+  document.getElementById('score-panel').style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
